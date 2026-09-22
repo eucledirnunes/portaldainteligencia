@@ -1,6 +1,6 @@
 import Parser from 'rss-parser';
 import type { SourceRow } from '@/domain/types';
-import { fetchText } from '@/lib/utils/http';
+import { fetchXmlText } from '@/lib/utils/http';
 import type { FeedItem, SourceCollector } from '../types';
 
 type MediaNode = { $?: { url?: string; medium?: string } };
@@ -33,7 +33,7 @@ export class RssCollector implements SourceCollector {
   }
 
   async collectUrl(feedUrl: string): Promise<FeedItem[]> {
-    const xml = await fetchText(feedUrl, {
+    const xml = await fetchXmlText(feedUrl, {
       headers: { Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5' },
     });
     const feed = await parser.parseString(xml);

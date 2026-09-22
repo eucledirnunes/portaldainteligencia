@@ -80,5 +80,28 @@ insert into sources (name, slug, website_url, feed_url, source_type, is_primary_
  -- Brasil (feeds generalistas de tecnologia: filtro de IA obrigatório)
  ('Tecnoblog',     'tecnoblog',     'https://tecnoblog.net',                    'https://tecnoblog.net/feed/',                              'rss', false, 3, 'pt', 'BR', null, true, '{"ai_filter":true}'),
  ('Canaltech',     'canaltech',     'https://canaltech.com.br',                 'https://canaltech.com.br/rss/',                            'rss', false, 3, 'pt', 'BR', null, true, '{"ai_filter":true}'),
- ('Olhar Digital', 'olhar-digital', 'https://olhardigital.com.br',              'https://olhardigital.com.br/feed/',                        'rss', false, 3, 'pt', 'BR', null, true, '{"ai_filter":true}')
+ ('Olhar Digital', 'olhar-digital', 'https://olhardigital.com.br',              'https://olhardigital.com.br/feed/',                        'rss', false, 3, 'pt', 'BR', null, true, '{"ai_filter":true}'),
+ ('IA Brasil Notícias',  'ia-brasil-noticias',  'https://iabrasilnoticias.com.br/',           'https://iabrasilnoticias.com.br/feed/',                    'rss', false, 3, 'pt', 'BR', null, true, '{}'),
+ ('Inovação Tecnológica','inovacao-tecnologica','https://www.inovacaotecnologica.com.br/',    'https://www.inovacaotecnologica.com.br/boletim/rss.xml',   'rss', false, 3, 'pt', 'BR', null, true, '{"ai_filter":true}'),
+ -- Jornalismo internacional adicional
+ ('The Guardian AI',       'guardian-ai',           'https://www.theguardian.com/technology/artificialintelligenceai',  'https://www.theguardian.com/technology/artificialintelligenceai/rss', 'rss', false, 4, 'en', 'GB', null, true, '{}'),
+ ('Financial Times AI',    'ft-ai',                 'https://www.ft.com/artificial-intelligence',                        'https://www.ft.com/artificial-intelligence?format=rss',              'rss', false, 5, 'en', 'GB', null, true, '{}'),
+ ('The New York Times AI', 'nyt-ai',                'https://www.nytimes.com/spotlight/artificial-intelligence',         'https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/spotlight/artificial-intelligence/rss.xml', 'rss', false, 5, 'en', 'US', null, true, '{}'),
+ ('Fast Company AI',       'fast-company-ai',       'https://www.fastcompany.com/section/artificial-intelligence',       'https://www.fastcompany.com/section/artificial-intelligence/rss',    'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('The Conversation AI',   'the-conversation-ai',   'https://theconversation.com/topics/artificial-intelligence-ai-90',  'https://theconversation.com/topics/artificial-intelligence-ai-90/articles.atom', 'rss', false, 4, 'en', null, null, true, '{}'),
+ ('AI Business',           'ai-business',           'https://aibusiness.com/',                                          'https://aibusiness.com/rss.xml',                                      'rss', false, 3, 'en', 'US', null, true, '{}'),
+ -- Laboratórios/institutos de pesquisa (fontes primárias)
+ ('BAIR Blog',    'bair-blog',    'https://bair.berkeley.edu/blog/',            'https://bair.berkeley.edu/blog/feed.xml',           'rss', true, 5, 'en', 'US', null, true, '{}'),
+ ('MIT News: Inteligência Artificial', 'mit-news-ai', 'https://news.mit.edu/topic/artificial-intelligence2', 'https://news.mit.edu/rss/topic/artificial-intelligence2', 'rss', true, 5, 'en', 'US', null, true, '{}'),
+ ('Redwood Research', 'redwood-research', 'https://blog.redwoodresearch.org/', 'https://blog.redwoodresearch.org/feed',              'rss', true, 4, 'en', 'US', null, true, '{}'),
+ -- Vozes independentes respeitadas na comunidade de IA
+ ('Simon Willison',        'simon-willison',        'https://simonwillison.net/',            'https://simonwillison.net/atom/everything/',  'rss', false, 4, 'en', 'GB', null, true, '{}'),
+ ('Latent.Space',          'latent-space',          'https://www.latent.space/',              'https://www.latent.space/feed',              'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('One Useful Thing',      'one-useful-thing',      'https://www.oneusefulthing.org/',        'https://www.oneusefulthing.org/feed',        'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('Transformer',           'transformer-news',      'https://www.transformernews.ai/',        'https://www.transformernews.ai/feed',        'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('AI as Normal Technology','normal-technology',    'https://www.normaltech.ai/',              'https://www.normaltech.ai/feed',             'rss', false, 4, 'en', 'US', null, true, '{}'),
+ -- Robótica e negócios/startups de IA
+ ('The Robot Report',      'robot-report',          'https://www.therobotreport.com/',        'https://www.therobotreport.com/feed/',       'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('IEEE Spectrum Robotics','ieee-spectrum-robotics','https://spectrum.ieee.org/topic/robotics/','https://spectrum.ieee.org/feeds/topic/robotics.rss', 'rss', false, 4, 'en', 'US', null, true, '{}'),
+ ('Crunchbase News AI',    'crunchbase-ai',         'https://news.crunchbase.com/sections/ai/','https://news.crunchbase.com/sections/ai/feed/', 'rss', false, 4, 'en', 'US', null, true, '{}')
 on conflict (slug) do nothing;

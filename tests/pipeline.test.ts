@@ -227,3 +227,21 @@ describe('formatação de cotações', () => {
     expect(formatMarketChange(metal)).toBe('0.00%');
   });
 });
+
+import { detectEncoding } from '@/lib/utils/http';
+
+describe('detectEncoding', () => {
+  const bytes = (s: string) => new TextEncoder().encode(s);
+  it('usa o charset do header Content-Type quando presente', () => {
+    expect(detectEncoding(bytes('<xml/>'), 'application/xml; charset=ISO-8859-1')).toBe('iso-8859-1');
+  });
+  it('cai para o encoding declarado no prólogo XML sem header', () => {
+    expect(detectEncoding(bytes('<?xml version="1.0" encoding="ISO-8859-1"?>'), 'application/xml')).toBe('iso-8859-1');
+  });
+  it('usa utf-8 por padrão quando nada é declarado', () => {
+    expect(detectEncoding(bytes('<?xml version="1.0"?>'), null)).toBe('utf-8');
+  });
+  it('ignora encoding desconhecido/inválido e cai para utf-8', () => {
+    expect(detectEncoding(bytes('<?xml version="1.0" encoding="x-bogus"?>'), null)).toBe('utf-8');
+  });
+});

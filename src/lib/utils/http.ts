@@ -42,3 +42,25 @@ export async function fetchText(url: string, opts?: Parameters<typeof fetchWithR
   if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
   return res.text();
 }
+
+const KNOWN_ENCODINGS = new Set(['utf-8', 'iso-8859-1', 'windows-1252', 'latin1']);
+
+/** Detecta a codificação declarada (header Content-Type ou <?xml ... encoding="...">) em vez de assumir UTF-8. */
+export function detectEncoding(bytes: Uint8Array, contentType: string | null): string {
+  const fromHeader = /charset=([\w-]+)/i.exec(contentType ?? '')?.[1]?.toLowerCase();
+  if (fromHeader && KNOWN_ENCODINGS.has(fromHeader)) return fromHeader;
+  // Só os primeiros ~200 bytes interessam pro prólogo XML; ASCII-safe mesmo antes de decodificar.
+  const prologue = Buffer.from(bytes.subarray(0, 200)).toString('ascii');
+  const fromXml = /encoding=["']([\w-]+)["']/i.exec(prologue)?.[1]?.toLowerCase();
+  if (fromXml && KNOWN_ENCODINGS.has(fromXml)) return fromXml;
+  return 'utf-8';
+}
+
+/** Como fetchText, mas respeita a codificação declarada pelo feed (evita "Inova��o" em feeds ISO-8859-1). */
+export async function fetchXmlText(url: string, opts?: Parameters<typeof fetchWithRetry>[1]): Promise<string> {
+  const res = await fetchWithRetry(url, opts);
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${url}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const encoding = detectEncoding(bytes, res.headers.get('content-type'));
+  return new TextDecoder(encoding).decode(bytes);
+}
