@@ -1,0 +1,41 @@
+{
+  "name": "ai-portal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Portal de notícias de Inteligência Artificial: coleta, eventos, artigos e portal público.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "ingest": "tsx --env-file-if-exists=.env.local src/ingestion/cli.ts",
+    "ingest:dry": "tsx --env-file-if-exists=.env.local src/ingestion/cli.ts --dry-run",
+    "events": "tsx --env-file-if-exists=.env.local src/events/cli.ts",
+    "editorial": "tsx --env-file-if-exists=.env.local src/editorial/cli.ts",
+    "covers:seed": "tsx --env-file-if-exists=.env.local src/editorial/seed-covers-cli.ts",
+    "pipeline": "npm run ingest && npm run events && npm run editorial"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.0",
+    "cheerio": "^1.0.0",
+    "next": "^15.1.0",
+    "p-limit": "^6.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
