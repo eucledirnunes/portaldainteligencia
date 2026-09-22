@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getFeed } from '@/data/portal';
-import { formatClock } from '@/lib/format';
+import { formatClock, timeAgo } from '@/lib/format';
 import { NAV } from '@/lib/site';
 import { Logo } from './Logo';
 import { MarketTicker } from './MarketTicker';
@@ -16,7 +16,7 @@ async function NowBar() {
           <span aria-hidden="true" className="pip h-1.5 w-1.5 rounded-full bg-white" />
           Agora em IA
         </span>
-        <span className="shrink-0 text-slate-400">{formatClock(latest.published_at)}</span>
+        <span className="shrink-0 text-slate-400" title={formatClock(latest.published_at)}>{timeAgo(latest.published_at)}</span>
         <Link href={`/noticias/${latest.slug}`} className="truncate font-sans text-[0.8rem] text-white hover:underline">
           {latest.title}
         </Link>
