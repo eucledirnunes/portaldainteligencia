@@ -45,7 +45,7 @@ export async function Header() {
           </Link>
         </div>
         <nav aria-label="Principal" className="border-t border-line">
-          <ul className="mx-auto flex max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap px-4 py-2 text-[0.95rem] font-semibold sm:px-6">
+          <ul className="no-scrollbar mx-auto flex max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap px-4 py-2 text-[0.95rem] font-semibold sm:px-6">
             {NAV.map((i) => (
               <li key={i.href}><Link href={i.href} className="text-muted hover:text-ink">{i.label}</Link></li>
             ))}

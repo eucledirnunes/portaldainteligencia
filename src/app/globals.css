@@ -51,6 +51,12 @@
 .marquee-track { animation: marquee 32s linear infinite; }
 .marquee-track:hover { animation-play-state: paused; }
 
+/* Esconde a barra de rolagem nativa em faixas horizontais decorativas (menu, tickers),
+   mantendo o conteúdo rolável por toque/arraste. Tabelas de dados (admin, /fontes) mantêm
+   a barra padrão do navegador de propósito — lá ela é um indicativo útil, não decoração. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .pip { animation: none; }
   .marquee-track { animation: none; }

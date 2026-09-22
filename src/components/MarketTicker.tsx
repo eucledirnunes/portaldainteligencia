@@ -21,7 +21,7 @@ export async function MarketTicker() {
   if (!quotes.length) return null;
 
   return (
-    <div className="overflow-x-auto border-t border-line bg-navy px-4 py-1.5 sm:px-6" aria-label="Cotações de mercado">
+    <div className="no-scrollbar overflow-x-auto border-t border-line bg-navy px-4 py-1.5 sm:px-6" aria-label="Cotações de mercado">
       <div className="marquee-track flex w-max font-mono text-[0.68rem]">
         <div className="flex shrink-0">{quotes.map((q) => <Item key={q.symbol} q={q} />)}</div>
         <div className="flex shrink-0" aria-hidden="true">{quotes.map((q) => <Item key={`dup-${q.symbol}`} q={q} />)}</div>
