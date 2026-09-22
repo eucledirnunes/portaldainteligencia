@@ -1,23 +1,9 @@
 import Link from 'next/link';
-import { getFeed, getPublicStats } from '@/data/portal';
+import { getFeed } from '@/data/portal';
 import { formatClock } from '@/lib/format';
 import { NAV } from '@/lib/site';
 import { Logo } from './Logo';
 import { MarketTicker } from './MarketTicker';
-
-/** Linha discreta de atualização: só a hora da última coleta (sem expor números internos do pipeline). */
-async function TelemetryBar() {
-  const s = await getPublicStats();
-  if (!s?.last_checked_at) return null;
-  return (
-    <div className="bg-low px-4 py-1 sm:px-6">
-      <div className="mx-auto flex max-w-page items-center gap-1.5 font-mono text-[0.68rem] uppercase tracking-wider text-muted">
-        <span aria-hidden="true" className="pip h-1.5 w-1.5 rounded-full bg-ok" />
-        Atualizado às {formatClock(s.last_checked_at)}
-      </div>
-    </div>
-  );
-}
 
 /** Faixa escura "AGORA EM IA" com a matéria publicada mais recente. */
 async function NowBar() {
@@ -42,7 +28,6 @@ async function NowBar() {
 export async function Header() {
   return (
     <>
-      <TelemetryBar />
       <header className="sticky top-0 z-30 bg-surface/95 shadow-[0_1px_8px_rgba(10,14,23,0.05)] backdrop-blur">
         <div className="mx-auto flex h-16 max-w-page items-center gap-4 px-4 sm:px-6">
           <Logo />

@@ -107,14 +107,19 @@ export default async function Home() {
                 <span aria-hidden="true" className="pip h-2 w-2 rounded-full bg-ok" />
                 Bastidores da redação
               </h2>
-              <p className="mt-1 text-xs leading-snug text-slate-300">Pipeline automatizado: coleta, agrupamento de fontes e publicação. Números das últimas 24 h.</p>
-              <dl className="mt-3 space-y-1.5 font-mono text-[0.72rem]">
+              <p className="mt-1 text-xs leading-snug text-slate-300">
+                Este portal não tem repórteres humanos: um pipeline de inteligência artificial coleta, agrupa e redige as matérias. Números das últimas 24 h.
+              </p>
+              <dl className="mt-3 space-y-2 font-mono text-[0.72rem]">
                 {[
-                  ['Coleta', `${stats.raw_24h} itens`],
-                  ['Agrupamento', `${stats.events_24h} eventos`],
-                  ['Publicação', `${stats.published_24h} matérias`],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between rounded bg-navy px-2.5 py-1.5"><dt className="text-slate-300">{k}</dt><dd className="font-bold text-ok">{v}</dd></div>
+                  ['Agente Coletor', 'varre as fontes atrás de notícias novas', `${stats.raw_24h} itens`],
+                  ['Agente Editor', 'agrupa quem fala do mesmo fato num só evento', `${stats.events_24h} eventos`],
+                  ['Editor-chefe IA', 'redige, classifica e revisa antes de publicar', `${stats.published_24h} matérias`],
+                ].map(([name, role, v]) => (
+                  <div key={name} className="rounded bg-navy px-2.5 py-1.5">
+                    <div className="flex justify-between"><dt className="font-bold text-white">{name}</dt><dd className="font-bold text-ok">{v}</dd></div>
+                    <p className="mt-0.5 text-[0.65rem] font-sans normal-case text-slate-400">{role}</p>
+                  </div>
                 ))}
               </dl>
             </section>
