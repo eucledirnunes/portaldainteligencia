@@ -3,6 +3,7 @@ import { getFeed, getPublicStats } from '@/data/portal';
 import { formatClock } from '@/lib/format';
 import { NAV } from '@/lib/site';
 import { Logo } from './Logo';
+import { MarketTicker } from './MarketTicker';
 
 /** Linha discreta de atualização: só a hora da última coleta (sem expor números internos do pipeline). */
 async function TelemetryBar() {
@@ -67,6 +68,7 @@ export async function Header() {
         </nav>
       </header>
       <NowBar />
+      <MarketTicker />
     </>
   );
 }

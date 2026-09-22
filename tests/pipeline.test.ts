@@ -208,3 +208,22 @@ describe('pool de capas por categoria', () => {
     expect(POOL_SIZE).toBe(4);
   });
 });
+
+import { formatMarketChange, formatMarketPrice, type MarketQuote } from '@/lib/market';
+
+describe('formatação de cotações', () => {
+  const stock: MarketQuote = { symbol: 'NVDA', label: 'NVIDIA', kind: 'stock', price: 227.38, changePercent: 1.58, currency: 'USD' };
+  const forex: MarketQuote = { symbol: 'USD/BRL', label: 'Dólar', kind: 'forex', price: 5.3245, changePercent: -0.42, currency: 'BRL' };
+  const metal: MarketQuote = { symbol: 'XAU/USD', label: 'Ouro', kind: 'metal', price: 3789.5, changePercent: 0, currency: 'USD' };
+
+  it('formata preço com prefixo e casas certas por tipo de ativo', () => {
+    expect(formatMarketPrice(stock)).toBe('$227.38');
+    expect(formatMarketPrice(forex)).toBe('R$ 5.3245');
+    expect(formatMarketPrice(metal)).toBe('$3789.50');
+  });
+  it('formata variação percentual com sinal', () => {
+    expect(formatMarketChange(stock)).toBe('+1.58%');
+    expect(formatMarketChange(forex)).toBe('-0.42%');
+    expect(formatMarketChange(metal)).toBe('0.00%');
+  });
+});
