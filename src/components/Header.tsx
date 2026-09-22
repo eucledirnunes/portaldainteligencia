@@ -4,23 +4,15 @@ import { formatClock } from '@/lib/format';
 import { NAV } from '@/lib/site';
 import { Logo } from './Logo';
 
-/** Barra superior de telemetria: SOMENTE números reais do banco (view public_stats). */
+/** Linha discreta de atualização: só a hora da última coleta (sem expor números internos do pipeline). */
 async function TelemetryBar() {
   const s = await getPublicStats();
-  if (!s) return null;
+  if (!s?.last_checked_at) return null;
   return (
     <div className="bg-low px-4 py-1 sm:px-6">
-      <div className="mx-auto flex max-w-page items-center gap-3 overflow-x-auto whitespace-nowrap font-mono text-[0.68rem] uppercase tracking-wider text-muted">
-        <span className="inline-flex items-center gap-1.5 font-semibold text-okink">
-          <span aria-hidden="true" className="pip h-2 w-2 rounded-full bg-ok" />
-          {s.active_sources} fontes monitoradas
-        </span>
-        <span className="text-outline/50">|</span>
-        <span>Última coleta: {s.last_checked_at ? formatClock(s.last_checked_at) : '—'}</span>
-        <span className="text-outline/50">|</span>
-        <span>{s.raw_24h} itens coletados / 24h</span>
-        <span className="text-outline/50">|</span>
-        <span>{s.events_24h} eventos / 24h</span>
+      <div className="mx-auto flex max-w-page items-center gap-1.5 font-mono text-[0.68rem] uppercase tracking-wider text-muted">
+        <span aria-hidden="true" className="pip h-1.5 w-1.5 rounded-full bg-ok" />
+        Atualizado às {formatClock(s.last_checked_at)}
       </div>
     </div>
   );

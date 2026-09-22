@@ -1,11 +1,12 @@
 name: Pipeline editorial (coleta -> eventos -> artigos)
 
-# Substitui o workflow original (que commitava JSONs no repositório).
-# Agora o estado vive no Supabase; o Actions só executa o pipeline.
+# O estado vive no Supabase, lido pelo site a cada requisição (Next.js/Vercel) — este workflow
+# NÃO precisa commitar nada no repositório para o site "atualizar": basta rodar o pipeline.
+# Requer os secrets abaixo configurados em Settings > Secrets and variables > Actions do repositório.
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *" # todo início de hora (UTC) — cobre também as 10h de Brasília em diante
 
 concurrency:
   group: pipeline
