@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArticleCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
 import { ProvenanceStrip } from '@/components/Provenance';
@@ -46,6 +47,11 @@ export default async function Home() {
 
   return (
     <>
+      <Image
+        src="/banner-hero.webp" alt="Blog da Inteligência" width={1710} height={667} priority
+        className="mb-8 h-auto w-full rounded-lg object-cover"
+      />
+
       <div className="grid items-start gap-6 lg:grid-cols-12">
         {/* Destaque principal */}
         <article className="flex flex-col gap-4 lg:col-span-8">

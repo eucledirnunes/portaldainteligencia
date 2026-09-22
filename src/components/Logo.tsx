@@ -15,15 +15,18 @@ export function LogoMark({ size = 32 }: { size?: number }) {
 }
 
 export function Logo() {
-  const [first, ...rest] = SITE.name.split(' ');
+  // Destaca a última palavra do nome (a mais distintiva: "Aivvo", "Inteligência" etc.).
+  const words = SITE.name.split(' ');
+  const highlight = words.at(-1);
+  const rest = words.slice(0, -1).join(' ');
   return (
     <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITE.name} — página inicial`}>
       <LogoMark />
       <span className="flex flex-col leading-none">
         <span className="text-[1.35rem] font-extrabold tracking-tight text-ink">
-          {first} <span className="text-accent">{rest.join(' ')}</span>
+          {rest} <span className="text-accent">{highlight}</span>
         </span>
-        <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted">Notícias de IA</span>
+        <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted">{SITE.tagline}</span>
       </span>
     </Link>
   );

@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-md text-sm text-muted">
-            {SITE.tagline} As matérias contextualizam o que foi publicado por fontes originais, e cada uma lista os links utilizados.
+            {SITE.tagline}. As matérias contextualizam o que foi publicado por fontes originais, e cada uma lista os links utilizados.
           </p>
         </div>
         <nav aria-label="Rodapé: seções">

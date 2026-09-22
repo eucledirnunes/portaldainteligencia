@@ -1,6 +1,6 @@
 export const SITE = {
-  name: 'Blog Aivvo',
-  tagline: 'Notícias de Inteligência Artificial, com as fontes à vista.',
+  name: 'Blog da Inteligência',
+  tagline: 'Notícias sobre IA',
   description: 'Portal brasileiro de notícias sobre Inteligência Artificial: modelos, empresas, ferramentas, pesquisa e IA no Brasil.',
   url: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, ''),
   locale: 'pt-BR',

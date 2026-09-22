@@ -3,7 +3,7 @@
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const USER_AGENT =
-  process.env.INGEST_USER_AGENT || 'SinapseBot/0.1 (+https://example.com/bot)';
+  process.env.INGEST_USER_AGENT || 'BlogDaInteligenciaBot/0.1 (+https://example.com/bot)';
 
 const RETRY_STATUS = new Set([429, 500, 502, 503, 504]);
 
