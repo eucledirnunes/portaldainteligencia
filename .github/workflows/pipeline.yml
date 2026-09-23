@@ -6,7 +6,10 @@ name: Pipeline editorial (coleta -> eventos -> artigos)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *" # todo início de hora (UTC) — cobre também as 10h de Brasília em diante
+    # Evita o minuto 0: o GitHub avisa que o início de cada hora é o horário de pico do
+    # scheduler e agendamentos podem ser descartados nesse minuto. Roda 2x/h (:12 e :42)
+    # como redundância — se um disparo for descartado, o outro cobre a lacuna.
+    - cron: "12,42 * * * *"
 
 concurrency:
   group: pipeline
