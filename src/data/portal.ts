@@ -1,5 +1,6 @@
 import { getPublicClient } from '@/lib/supabase/clients';
 import type { CategoryRow, CompanyRow, ModelRow } from '@/domain/types';
+import { getAuthorForCategory, type Author } from '@/lib/authors';
 
 /**
  * Camada de leitura do portal público. Usa o cliente anon (RLS): só enxerga artigos publicados.
@@ -13,6 +14,7 @@ export interface CardArticle {
   featured_image: string | null;
   published_at: string | null;
   category: { name: string; slug: string } | null;
+  author: Author;
   source: string | null;
   /** Todas as fontes do evento (primárias primeiro). */
   sources: { name: string; isPrimary: boolean }[];
@@ -72,6 +74,7 @@ async function attachSources(rows: Row[]): Promise<CardArticle[]> {
       featured_image: r.featured_image,
       published_at: r.published_at,
       category: one(r.categories),
+      author: getAuthorForCategory(one<{ name: string; slug: string }>(r.categories)?.slug ?? null),
       source: byArticle.get(r.id)?.[0]?.name ?? null,
       sources: byArticle.get(r.id) ?? [],
       eventId: r.event_id ?? null,

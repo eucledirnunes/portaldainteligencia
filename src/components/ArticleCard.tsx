@@ -28,8 +28,8 @@ export function Kicker({ a }: { a: CardArticle }) {
 function Meta({ a }: { a: CardArticle }) {
   return (
     <p className="meta">
-      {a.source && <span className="font-medium text-ink/70">{a.source}</span>}
-      {a.source && a.published_at && ' · '}
+      <span className="font-medium text-ink/70">Por {a.author.name}</span>
+      {a.published_at && ' · '}
       {a.published_at && <time dateTime={a.published_at}>{timeAgo(a.published_at)}</time>}
     </p>
   );

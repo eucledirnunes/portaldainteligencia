@@ -64,8 +64,9 @@ export default async function ArticlePage({ params }: Props) {
         </div>
         <h1 className="headline text-4xl sm:text-5xl">{a.title}</h1>
         {a.subtitle && <p className="mt-3 font-serif text-xl text-muted">{a.subtitle}</p>}
+        <p className="mt-3 text-sm font-medium text-ink/80">Por {a.author.name} — {a.author.role}</p>
         {n > 0 && (
-          <p className="mt-3 text-sm text-muted">
+          <p className="mt-1 text-sm text-muted">
             Com informações de {[...new Set(a.sourceLinks.map((s) => s.source_name))].join(', ')}.{' '}
             {a.generated_by !== 'human' && a.generated_by !== 'basic' && <span>Texto produzido com apoio de inteligência artificial a partir das fontes listadas ao final.</span>}
           </p>
