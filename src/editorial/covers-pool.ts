@@ -86,6 +86,48 @@ export async function loadCoverPool(db: SupabaseClient): Promise<CoverPool> {
   return pool;
 }
 
+export interface CoverSlot {
+  index: number;
+  url: string | null;
+}
+export interface CoverCategory {
+  slug: string;
+  name: string;
+  slots: CoverSlot[];
+}
+
+/** Lista, por categoria, as POOL_SIZE posições do pool e o que há em cada uma (para o painel /admin/capas). */
+export async function listCoverSlots(db: SupabaseClient): Promise<CoverCategory[]> {
+  const cats = await db.from('categories').select('slug, name').order('sort_order');
+  if (cats.error) throw cats.error;
+  const entries = [...(cats.data ?? []).map((c) => ({ slug: c.slug as string, name: c.name as string })), { slug: FALLBACK_CATEGORY, name: 'Geral (sem categoria)' }];
+
+  return Promise.all(
+    entries.map(async (cat) => {
+      const { data } = await db.storage.from(BUCKET).list(`categories/${cat.slug}`);
+      const have = new Map((data ?? []).map((f) => [f.name, f]));
+      const slots: CoverSlot[] = Array.from({ length: POOL_SIZE }, (_, i) => {
+        const file = have.get(`${i}.png`);
+        return { index: i, url: file ? db.storage.from(BUCKET).getPublicUrl(path(cat.slug, i)).data.publicUrl : null };
+      });
+      return { slug: cat.slug, name: cat.name, slots };
+    }),
+  );
+}
+
+/** Substitui uma posição específica do pool por uma imagem gerada agora. Usado pelo painel /admin/capas. */
+export async function regenerateSlot(db: SupabaseClient, provider: ImageProvider, categorySlug: string, categoryName: string, index: number): Promise<void> {
+  const bytes = await provider.generate(buildCategoryCoverPrompt(categoryName, index));
+  const up = await db.storage.from(BUCKET).upload(path(categorySlug, index), bytes, { contentType: 'image/png', upsert: true });
+  if (up.error) throw up.error;
+}
+
+/** Sobe um arquivo escolhido manualmente para uma posição do pool. Usado pelo painel /admin/capas. */
+export async function uploadSlot(db: SupabaseClient, categorySlug: string, index: number, bytes: Uint8Array, contentType: string): Promise<void> {
+  const up = await db.storage.from(BUCKET).upload(path(categorySlug, index), bytes, { contentType, upsert: true });
+  if (up.error) throw up.error;
+}
+
 /** Escolha determinística (mesma matéria = sempre a mesma capa) dentro do pool da categoria, com fallback para "geral". */
 export function pickCover(pool: CoverPool, categorySlug: string | null, seedKey: string): string | null {
   const urls = (categorySlug && pool.get(categorySlug)) || pool.get(FALLBACK_CATEGORY);
