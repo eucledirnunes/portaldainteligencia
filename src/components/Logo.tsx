@@ -24,7 +24,7 @@ export function Logo() {
       <LogoMark />
       <span className="flex flex-col leading-none">
         <span className="text-[1.35rem] font-extrabold tracking-tight text-ink">
-          {rest} <span className="text-accent">{highlight}</span>
+          {rest && `${rest} `}<span className="text-accent">{highlight}</span>
         </span>
         <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted">{SITE.tagline}</span>
       </span>

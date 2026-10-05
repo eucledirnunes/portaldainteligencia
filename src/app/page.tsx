@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { BannerCarousel } from '@/components/BannerCarousel';
 import Link from 'next/link';
 import { ArticleCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
 import {
@@ -47,10 +47,7 @@ export default async function Home() {
 
   return (
     <>
-      <Image
-        src="/banner-hero.webp" alt="Blog da Inteligência" width={1710} height={667} priority
-        className="mb-8 h-auto w-full rounded-lg object-cover"
-      />
+      <BannerCarousel />
 
       <div className="grid items-start gap-6 lg:grid-cols-12">
         {/* Destaque principal */}
