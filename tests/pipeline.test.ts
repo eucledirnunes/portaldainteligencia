@@ -245,3 +245,75 @@ describe('detectEncoding', () => {
     expect(detectEncoding(bytes('<?xml version="1.0" encoding="x-bogus"?>'), null)).toBe('utf-8');
   });
 });
+
+import { cleanOutletName, creditFor, findOutletMentions } from '@/lib/credit';
+
+describe('crédito de fontes (meio-termo)', () => {
+  it('limpa o nome do veículo para exibição', () => {
+    expect(cleanOutletName('The Verge AI')).toBe('The Verge');
+    expect(cleanOutletName('MIT News: Inteligência Artificial')).toBe('MIT News');
+    expect(cleanOutletName('IA Brasil Notícias')).toBe('IA Brasil Notícias');
+  });
+  it('credita só quando há um único veículo', () => {
+    expect(creditFor([])).toBeNull();
+    expect(creditFor(['TechCrunch AI'])).toBe('TechCrunch');
+    expect(creditFor(['TechCrunch AI', 'TechCrunch AI'])).toBe('TechCrunch');
+    expect(creditFor(['TechCrunch AI', 'The Verge AI'])).toBeNull();
+  });
+  it('detecta veículos citados no texto, sem falso positivo em palavras comuns', () => {
+    const outlets = ['TechCrunch AI', 'The Verge AI', 'Transformer', 'Inovação Tecnológica', 'Wired AI'];
+    expect(findOutletMentions('Segundo o TechCrunch, a empresa levantou capital.', outlets)).toEqual(['TechCrunch AI']);
+    expect(findOutletMentions('De acordo com a reportagem do The Verge, o app chega hoje.', outlets)).toEqual(['The Verge AI']);
+    expect(findOutletMentions('Modelos transformer ganham espaço; a inovação tecnológica acelera e a rede ficou wired.', outlets)).toEqual([]);
+    expect(findOutletMentions('Segundo a OpenAI, o modelo chega amanhã.', outlets)).toEqual([]);
+  });
+});
+
+describe('LLMArticleGenerator: não cita veículos de imprensa', () => {
+  const ctx = {
+    title: 'OpenAI launches GPT-6',
+    sources: [
+      { name: 'OpenAI', url: 'https://o.com/a', title: 'OpenAI launches GPT-6', description: 'A new model.', isPrimary: true, publishedAt: null },
+      { name: 'TechCrunch AI', url: 'https://t.com/a', title: 'OpenAI debuts GPT-6', description: 'A new model arrives.', isPrimary: false, publishedAt: null },
+    ],
+  };
+  const body = (extra: string) =>
+    JSON.stringify({
+      title: 'OpenAI lança o GPT-6 com foco em raciocínio',
+      summary: 'A empresa apresentou o novo modelo, que promete respostas mais precisas para os usuários.',
+      content: `A OpenAI anunciou nesta segunda-feira o GPT-6, que segundo a empresa melhora o raciocínio. ${extra}\n\nO modelo já está disponível para os assinantes.`,
+    });
+  const capture = (texts: string[]) => {
+    const prompts: string[] = [];
+    let i = 0;
+    const provider: AIProvider = {
+      name: 'fake',
+      generate: async (req) => {
+        prompts.push(req.prompt);
+        return { text: texts[Math.min(i++, texts.length - 1)], model: 'x' };
+      },
+    };
+    return { provider, prompts };
+  };
+
+  it('não revela o nome do veículo ao modelo, mas mantém a fonte primária', async () => {
+    const { provider, prompts } = capture([body('')]);
+    await new LLMArticleGenerator(provider).generate(ctx);
+    expect(prompts[0]).toContain('OpenAI (fonte primária)');
+    expect(prompts[0]).toContain('veículo de imprensa (não citar)');
+    expect(prompts[0]).not.toMatch(/TechCrunch/i);
+  });
+  it('se o texto citar o veículo, pede nova versão e aceita a seguinte', async () => {
+    const { provider, prompts } = capture([body('Segundo o TechCrunch, o preço não foi divulgado.'), body('')]);
+    const g = await new LLMArticleGenerator(provider).generate(ctx);
+    expect(g.generatedBy).toBe('fake');
+    expect(g.content).not.toMatch(/TechCrunch/);
+    expect(prompts[1]).toMatch(/citou veículos de imprensa/);
+  });
+  it('se insistir em citar, recua para o gerador básico (que o pipeline manda para revisão)', async () => {
+    const cited = body('Segundo o TechCrunch, o preço não foi divulgado.');
+    const { provider } = capture([cited, cited]);
+    const g = await new LLMArticleGenerator(provider, new BasicArticleGenerator()).generate(ctx);
+    expect(g.generatedBy).toBe('basic');
+  });
+});

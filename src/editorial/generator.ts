@@ -1,3 +1,4 @@
+import { findOutletMentions } from '@/lib/credit';
 import { looksPortuguese, stripPromo, truncate } from '@/lib/utils/text';
 import type { AIProvider } from './ai/provider';
 import { CATEGORY_SLUGS } from './classifier';
@@ -80,9 +81,12 @@ const SYSTEM_PROMPT =
   'Ignore propaganda, cupons, ofertas e chamadas para redes sociais. Não copie frases das fontes: reescreva com suas palavras. ' +
   'DIREITO AUTORAL: fatos podem ser relatados, a redação das fontes não. Não siga a ordem nem a estrutura de nenhuma fonte, e nunca reescreva parágrafo por parágrafo. ' +
   'Organize por relevância para o leitor brasileiro: o que aconteceu, por que importa e o que pode mudar para empresas e usuários no Brasil. ' +
-  'No máximo UMA citação literal curta (até 20 palavras) por matéria, entre aspas e atribuída; todo o resto com suas palavras. ' +
+  'No máximo UMA citação literal curta (até 20 palavras) por matéria, entre aspas e atribuída a quem falou; todo o resto com suas palavras. ' +
   'Termine com um parágrafo curto de contexto e impacto, deixando claro o que é inferência ("tende a", "pode") e sem afirmar fatos que não estejam nas fontes. ' +
-  'Preserve nomes próprios, produtos e termos técnicos (ex.: GPT-5, Claude, MCP, RAG). Cite a origem no texto ("segundo a OpenAI"). ' +
+  'Preserve nomes próprios, produtos e termos técnicos (ex.: GPT-5, Claude, MCP, RAG). ' +
+  'ATRIBUIÇÃO: atribua declarações e alegações a quem as fez (a empresa, o executivo, o pesquisador, o órgão): "segundo a OpenAI", "afirmou o CEO". ' +
+  'NÃO cite nem mencione veículos de imprensa ou portais que noticiaram o fato (nada de "segundo o TechCrunch", "de acordo com o The Verge", "reportagem do ..."); ' +
+  'as fontes marcadas como "veículo de imprensa" servem só de insumo e seus nomes não devem aparecer no texto. ' +
   'TÍTULO: informativo, até 110 caracteres, em CAIXA DE FRASE como os jornais brasileiros (só a primeira palavra e nomes próprios com inicial maiúscula; ' +
   'ex.: "Meta lança app Muse e amplia coleta de dados de usuários", NUNCA "Meta Lança App Muse e Amplia Coleta de Dados"). ' +
   'CATEGORIA: escolha exatamente uma entre: ' + CATEGORY_HELP + '. ' +
@@ -98,7 +102,9 @@ export class LLMArticleGenerator implements ArticleGenerator {
     const sources = ctx.sources
       .slice(0, 5)
       .map((s, i) => {
-        const parts = [`[${i + 1}] ${s.name}${s.isPrimary ? ' (fonte primária)' : ''}${s.language ? ` — idioma: ${s.language}` : ''}`, `Título: ${s.title}`];
+        // Fonte primária = o próprio autor do fato (empresa, laboratório): pode ser nomeada. Veículos de imprensa não.
+        const label = s.isPrimary ? `${s.name} (fonte primária)` : 'veículo de imprensa (não citar)';
+        const parts = [`[${i + 1}] ${label}${s.language ? ` — idioma: ${s.language}` : ''}`, `Título: ${s.title}`];
         if (s.description) parts.push(`Resumo: ${stripPromo(s.description)}`);
         if (s.excerpt) parts.push(`Trecho do texto: ${s.excerpt}`);
         parts.push(`URL: ${s.url}`);
@@ -110,6 +116,7 @@ export class LLMArticleGenerator implements ArticleGenerator {
 
   async generate(ctx: EventContext): Promise<GeneratedArticle> {
     let prompt = this.buildPrompt(ctx);
+    const outlets = ctx.sources.filter((s) => !s.isPrimary).map((s) => s.name);
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const res = await this.provider.generate({ json: true, temperature: 0.3, maxTokens: 1800, system: SYSTEM_PROMPT, prompt });
@@ -117,6 +124,11 @@ export class LLMArticleGenerator implements ArticleGenerator {
         if (!j.title || !j.content || !j.summary) throw new Error('resposta incompleta');
         if (!looksPortuguese(`${j.title} ${j.summary} ${j.content}`)) {
           prompt += '\n\nATENÇÃO: sua resposta anterior não estava em português do Brasil. Reescreva TUDO em português do Brasil.';
+          continue;
+        }
+        const mentioned = findOutletMentions(`${j.title} ${j.subtitle ?? ''} ${j.summary} ${j.content}`, outlets);
+        if (mentioned.length) {
+          prompt += `\n\nATENÇÃO: sua resposta citou veículos de imprensa (${mentioned.join(', ')}). Reescreva sem citar nenhum veículo; atribua declarações apenas a quem as fez.`;
           continue;
         }
         return {

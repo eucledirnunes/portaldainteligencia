@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-md text-sm text-muted">
-            {SITE.tagline}. As matérias contextualizam o que foi publicado por fontes originais, e cada uma lista os links utilizados.
+            {SITE.tagline}. Conteúdo produzido com apoio de inteligência artificial.
           </p>
         </div>
         <nav aria-label="Rodapé: seções">
@@ -21,10 +21,9 @@ export function Footer() {
             <li><Link href="/empresas" className="hover:text-ink">Empresas</Link></li>
           </ul>
         </nav>
-        <nav aria-label="Rodapé: transparência">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider">Transparência</h2>
+        <nav aria-label="Rodapé: site">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider">Site</h2>
           <ul className="space-y-2 text-sm text-muted">
-            <li><Link href="/fontes" className="hover:text-ink">Fontes monitoradas</Link></li>
             <li><Link href="/sitemap.xml" className="hover:text-ink">Mapa do site</Link></li>
           </ul>
         </nav>

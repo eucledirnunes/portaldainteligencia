@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArticleCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
-import { ProvenanceStrip } from '@/components/Provenance';
 import {
   getCategory, getCompanies, getFeed, getHourlyCounts, getPublicStats, getTrending, type CardArticle,
 } from '@/data/portal';
@@ -55,7 +54,6 @@ export default async function Home() {
       <div className="grid items-start gap-6 lg:grid-cols-12">
         {/* Destaque principal */}
         <article className="flex flex-col gap-4 lg:col-span-8">
-          <ProvenanceStrip a={lead} />
           <div className="space-y-2">
             <Kicker a={lead} />
             <h1 className="headline text-3xl sm:text-5xl">
@@ -80,7 +78,7 @@ export default async function Home() {
               <ol className="space-y-2">
                 {trending.map((a, i) => (
                   <li key={a.id} className="rounded bg-low p-3 hover:bg-container">
-                    <p className="font-mono text-[0.72rem] font-semibold text-accent">#{i + 1} · {a.sources.length || 1} {a.sources.length === 1 ? 'fonte' : 'fontes'}</p>
+                    <p className="font-mono text-[0.72rem] font-semibold text-accent">#{i + 1}</p>
                     <Link href={`/noticias/${a.slug}`} className="card-link mt-0.5 block text-[0.92rem] font-semibold leading-snug">{a.title}</Link>
                     <p className="meta mt-1">{formatClock(a.published_at)}</p>
                   </li>
@@ -147,7 +145,7 @@ export default async function Home() {
                     <h3 className="mt-2 text-[0.98rem] font-bold leading-snug group-hover:text-accent">{a.title}</h3>
                     {a.summary && <p className="mt-2 line-clamp-3 text-[0.82rem] text-muted">{a.summary}</p>}
                   </div>
-                  <p className="mt-4 flex justify-between font-mono text-[0.68rem] text-muted"><span>{a.sources.length || 1} {a.sources.length === 1 ? 'fonte' : 'fontes'}</span><span aria-hidden="true">→</span></p>
+                  <p className="mt-4 text-right font-mono text-[0.68rem] text-muted" aria-hidden="true">→</p>
                 </Link>
               );
             })}

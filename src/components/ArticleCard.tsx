@@ -98,7 +98,6 @@ export function LiveRow({ a }: { a: CardArticle }) {
       <time dateTime={a.published_at ?? undefined} className="pt-0.5 text-sm font-semibold tabular-nums text-accent">{formatTime(a.published_at)}</time>
       <div>
         <Link href={`/noticias/${a.slug}`} className="card-link font-medium leading-snug">{a.title}</Link>
-        {a.source && <p className="meta mt-0.5">{a.source}</p>}
       </div>
     </li>
   );

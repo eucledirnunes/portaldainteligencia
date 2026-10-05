@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArticleBody } from '@/components/ArticleBody';
 import { CompactCard, Thumb } from '@/components/ArticleCard';
 import { getArticle, getRelated } from '@/data/portal';
-import { formatDate, formatDateTime } from '@/lib/format';
+import { formatDateTime } from '@/lib/format';
 import { SITE } from '@/lib/site';
 
 export const revalidate = 60;
@@ -33,7 +33,7 @@ export default async function ArticlePage({ params }: Props) {
   if (!a) notFound();
   const related = await getRelated(a);
   const updated = a.published_at && new Date(a.updated_at).getTime() - new Date(a.published_at).getTime() > 3_600_000;
-  const n = a.sourceLinks.length;
+  const aiAssisted = a.generated_by !== 'human' && a.generated_by !== 'basic';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -45,7 +45,6 @@ export default async function ArticlePage({ params }: Props) {
     dateModified: a.updated_at,
     mainEntityOfPage: `${SITE.url}/noticias/${a.slug}`,
     publisher: { '@type': 'Organization', name: SITE.name },
-    citation: a.sourceLinks.map((s) => s.url),
   };
 
   return (
@@ -56,7 +55,6 @@ export default async function ArticlePage({ params }: Props) {
           {a.category && (
             <Link href={`/categoria/${a.category.slug}`} className="rounded bg-ink px-2 py-0.5 font-mono text-[0.66rem] font-semibold uppercase tracking-wider text-white">{a.category.name}</Link>
           )}
-          <span className="chip text-accent">{n} {n === 1 ? 'fonte' : 'fontes cruzadas'}</span>
           <span className="meta">
             Publicado <time dateTime={a.published_at ?? undefined}>{formatDateTime(a.published_at)}</time>
             {updated && <> · Atualizado <time dateTime={a.updated_at}>{formatDateTime(a.updated_at)}</time></>}
@@ -65,10 +63,10 @@ export default async function ArticlePage({ params }: Props) {
         <h1 className="headline text-4xl sm:text-5xl">{a.title}</h1>
         {a.subtitle && <p className="mt-3 font-serif text-xl text-muted">{a.subtitle}</p>}
         <p className="mt-3 text-sm font-medium text-ink/80">Por {a.author.name} — {a.author.role}</p>
-        {n > 0 && (
+        {(a.credit || aiAssisted) && (
           <p className="mt-1 text-sm text-muted">
-            Com informações de {[...new Set(a.sourceLinks.map((s) => s.source_name))].join(', ')}.{' '}
-            {a.generated_by !== 'human' && a.generated_by !== 'basic' && <span>Texto produzido com apoio de inteligência artificial a partir das fontes listadas ao final.</span>}
+            {a.credit && <>Com informações de {a.credit}. </>}
+            {aiAssisted && <>Texto produzido com apoio de inteligência artificial.</>}
           </p>
         )}
       </header>
@@ -83,31 +81,6 @@ export default async function ArticlePage({ params }: Props) {
           )}
           {a.summary && <p className="mb-6 border-l-4 border-accent pl-4 font-serif text-xl leading-snug">{a.summary}</p>}
           <ArticleBody content={a.content} />
-
-          <section aria-labelledby="fontes" className="mt-10 rounded-lg bg-low p-5">
-            <h2 id="fontes" className="text-sm font-bold uppercase tracking-wider">Fontes utilizadas</h2>
-            <p className="mt-1 text-xs text-muted">Links para o conteúdo original. Confira sempre a fonte primária.</p>
-            {n ? (
-              <ul className="mt-4 space-y-2">
-                {a.sourceLinks.map((s) => (
-                  <li key={s.url} className="rounded bg-surface p-3">
-                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                      {s.is_primary_source ? (
-                        <span className="badge-primary"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-ok" />Fonte primária</span>
-                      ) : (
-                        <span className="badge-secondary"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full border border-slate-400" />Secundária</span>
-                      )}
-                      {s.published_at && <span className="meta">{formatDate(s.published_at)}</span>}
-                    </div>
-                    <a href={s.url} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold text-accent hover:underline">{s.source_name} ↗</a>
-                    <p className="text-sm text-ink/80">{s.original_title}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm text-muted">Fontes indisponíveis para esta matéria.</p>
-            )}
-          </section>
         </div>
 
         <aside className="flex flex-col gap-4 lg:col-span-4">

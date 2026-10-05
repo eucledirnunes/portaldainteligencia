@@ -72,6 +72,8 @@ const isPt = (g: GeneratedArticle) => looksPortuguese(`${g.title} ${g.summary} $
 function pickStatus(g: GeneratedArticle, autoPublish: boolean): 'draft' | 'review' | 'published' | 'archived' {
   if (g.relevant === false) return 'archived'; // propaganda / fora do tema
   if (!isPt(g)) return 'draft';
+  // O gerador básico (sem LLM) quase copia a descrição da fonte e nomeia o veículo: só entra em revisão humana.
+  if (g.generatedBy === 'basic') return 'review';
   return autoPublish ? 'published' : 'review';
 }
 

@@ -16,5 +16,4 @@ export const NAV = [
   { label: 'Ferramentas', href: '/categoria/ferramentas' },
   { label: 'Pesquisa', href: '/categoria/pesquisa' },
   { label: 'IA no Brasil', href: '/categoria/ia-no-brasil' },
-  { label: 'Fontes', href: '/fontes' },
 ] as const;

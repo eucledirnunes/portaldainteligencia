@@ -40,9 +40,6 @@ export async function Header() {
             />
           </form>
           <Link href="/busca" className="ml-auto rounded bg-low px-3 py-1.5 text-xs font-semibold uppercase tracking-wider lg:hidden">Buscar</Link>
-          <Link href="/fontes" className="hidden rounded bg-container px-3 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-high lg:inline-block">
-            Status das fontes
-          </Link>
         </div>
         <nav aria-label="Principal" className="border-t border-line">
           <ul className="no-scrollbar mx-auto flex max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap px-4 py-2 text-[0.95rem] font-semibold sm:px-6">

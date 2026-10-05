@@ -1,6 +1,7 @@
 import { getPublicClient } from '@/lib/supabase/clients';
 import type { CategoryRow, CompanyRow, ModelRow } from '@/domain/types';
 import { getAuthorForCategory, type Author } from '@/lib/authors';
+import { creditFor } from '@/lib/credit';
 
 /**
  * Camada de leitura do portal público. Usa o cliente anon (RLS): só enxerga artigos publicados.
@@ -15,21 +16,9 @@ export interface CardArticle {
   published_at: string | null;
   category: { name: string; slug: string } | null;
   author: Author;
-  source: string | null;
-  /** Todas as fontes do evento (primárias primeiro). */
-  sources: { name: string; isPrimary: boolean }[];
   eventId: string | null;
   trend: number;
   importance: number;
-}
-
-export interface ArticleSource {
-  source_name: string;
-  source_website: string | null;
-  is_primary_source: boolean;
-  original_title: string;
-  url: string;
-  published_at: string | null;
 }
 
 export interface ArticleDetail extends CardArticle {
@@ -41,7 +30,8 @@ export interface ArticleDetail extends CardArticle {
   generated_by: string;
   companies: CompanyRow[];
   models: ModelRow[];
-  sourceLinks: ArticleSource[];
+  /** Veículo a creditar em texto simples (só quando a notícia vem de um único veículo); ver src/lib/credit.ts. */
+  credit: string | null;
 }
 
 const CARD_SELECT =
@@ -50,20 +40,7 @@ const CARD_SELECT =
 type Row = Record<string, any>;
 const one = <T>(v: T | T[] | null | undefined): T | null => (Array.isArray(v) ? v[0] ?? null : v ?? null);
 
-async function attachSources(rows: Row[]): Promise<CardArticle[]> {
-  const db = getPublicClient();
-  const byArticle = new Map<string, { name: string; isPrimary: boolean }[]>();
-  if (db && rows.length) {
-    const { data } = await db
-      .from('article_sources')
-      .select('article_id, source_name, is_primary_source')
-      .in('article_id', rows.map((r) => r.id));
-    for (const s of (data ?? []).sort((a, b) => Number(b.is_primary_source) - Number(a.is_primary_source))) {
-      const list = byArticle.get(s.article_id) ?? [];
-      if (!list.some((x) => x.name === s.source_name)) list.push({ name: s.source_name, isPrimary: s.is_primary_source });
-      byArticle.set(s.article_id, list);
-    }
-  }
+function toCards(rows: Row[]): CardArticle[] {
   return rows.map((r) => {
     const ev = one<Row>(r.news_events);
     return {
@@ -75,8 +52,6 @@ async function attachSources(rows: Row[]): Promise<CardArticle[]> {
       published_at: r.published_at,
       category: one(r.categories),
       author: getAuthorForCategory(one<{ name: string; slug: string }>(r.categories)?.slug ?? null),
-      source: byArticle.get(r.id)?.[0]?.name ?? null,
-      sources: byArticle.get(r.id) ?? [],
       eventId: r.event_id ?? null,
       trend: ev?.trend_score ?? 0,
       importance: ev?.importance_score ?? 0,
@@ -109,7 +84,7 @@ export async function getFeed(opts: { limit?: number; offset?: number; categoryI
   if (categoryId) q = q.eq('category_id', categoryId);
   if (eventIds) q = q.in('event_id', eventIds);
   const { data } = await q;
-  return attachSources((data ?? []) as Row[]);
+  return toCards((data ?? []) as Row[]);
 }
 
 /** Eventos com mais atividade recente que já têm artigo publicado. */
@@ -123,8 +98,7 @@ export async function getTrending(limit = 5): Promise<CardArticle[]> {
     .eq('status', 'published')
     .gte('published_at', since)
     .limit(60);
-  const cards = await attachSources((data ?? []) as Row[]);
-  return cards.sort((a, b) => b.trend - a.trend).slice(0, limit);
+  return toCards((data ?? []) as Row[]).sort((a, b) => b.trend - a.trend).slice(0, limit);
 }
 
 export async function getArticle(slug: string): Promise<ArticleDetail | null> {
@@ -137,11 +111,11 @@ export async function getArticle(slug: string): Promise<ArticleDetail | null> {
     .eq('status', 'published')
     .maybeSingle();
   if (!data) return null;
-  const [card] = await attachSources([data as Row]);
+  const [card] = toCards([data as Row]);
   const row = data as Row;
 
   const [src, comp, mod] = await Promise.all([
-    db.from('article_sources').select('source_name, source_website, is_primary_source, original_title, url, published_at').eq('article_id', row.id).order('is_primary_source', { ascending: false }).order('published_at'),
+    db.from('article_sources').select('source_name').eq('article_id', row.id),
     row.event_id ? db.from('event_companies').select('companies(*)').eq('event_id', row.event_id) : Promise.resolve({ data: [] }),
     row.event_id ? db.from('event_models').select('models(*)').eq('event_id', row.event_id) : Promise.resolve({ data: [] }),
   ]);
@@ -153,7 +127,7 @@ export async function getArticle(slug: string): Promise<ArticleDetail | null> {
     seo_title: row.seo_title,
     seo_description: row.seo_description,
     generated_by: row.generated_by,
-    sourceLinks: (src.data ?? []) as ArticleSource[],
+    credit: creditFor(((src.data ?? []) as { source_name: string }[]).map((s) => s.source_name)),
     companies: ((comp.data ?? []) as Row[]).map((r) => one<CompanyRow>(r.companies)).filter((c): c is CompanyRow => !!c),
     models: ((mod.data ?? []) as Row[]).map((r) => one<ModelRow>(r.models)).filter((m): m is ModelRow => !!m),
   };
@@ -218,7 +192,7 @@ export async function search(query: string) {
     db.from('models').select('*').ilike('name', like).limit(8),
   ]);
   return {
-    articles: await attachSources((a.data ?? []) as Row[]),
+    articles: toCards((a.data ?? []) as Row[]),
     companies: (c.data ?? []) as CompanyRow[],
     models: (m.data ?? []) as ModelRow[],
   };
@@ -254,26 +228,6 @@ export async function getPublicStats(): Promise<PublicStats | null> {
   const { data, error } = await db.from('public_stats').select('*').maybeSingle();
   if (error || !data) return null;
   return data as PublicStats;
-}
-
-export interface PublicSource {
-  name: string;
-  slug: string;
-  website_url: string;
-  source_type: 'rss' | 'scraper' | 'api';
-  is_primary_source: boolean;
-  reliability_level: number;
-  language: string;
-  country: string | null;
-  active: boolean;
-  last_checked_at: string | null;
-}
-
-export async function getPublicSources(): Promise<PublicSource[]> {
-  const db = getPublicClient();
-  if (!db) return [];
-  const { data } = await db.from('public_sources').select('*').order('is_primary_source', { ascending: false }).order('name');
-  return (data ?? []) as PublicSource[];
 }
 
 /** Matérias publicadas por hora nas últimas `hours` horas (mais antigo primeiro). */
