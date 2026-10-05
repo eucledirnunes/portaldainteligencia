@@ -62,13 +62,8 @@ export default async function ArticlePage({ params }: Props) {
         </div>
         <h1 className="headline text-4xl sm:text-5xl">{a.title}</h1>
         {a.subtitle && <p className="mt-3 font-serif text-xl text-muted">{a.subtitle}</p>}
-        <p className="mt-3 text-sm font-medium text-ink/80">Por {a.author.name} — {a.author.role}</p>
-        {(a.credit || aiAssisted) && (
-          <p className="mt-1 text-sm text-muted">
-            {a.credit && <>Com informações de {a.credit}. </>}
-            {aiAssisted && <>Texto produzido com apoio de inteligência artificial.</>}
-          </p>
-        )}
+        <p className="mt-3 text-sm font-medium text-ink/80">Por {a.agent.name}, agente de IA — {a.agent.beat}</p>
+        {aiAssisted && <p className="mt-1 text-sm text-muted">Texto produzido com apoio de inteligência artificial.</p>}
       </header>
 
       <div className="mt-8 grid items-start gap-8 lg:grid-cols-12">

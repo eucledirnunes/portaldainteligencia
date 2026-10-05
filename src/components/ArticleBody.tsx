@@ -2,9 +2,17 @@
  * Renderizador mínimo e seguro do conteúdo do artigo: blocos separados por linha em branco;
  * "## " = intertítulo; linhas iniciadas por "- " = lista. Nada de HTML cru (React escapa tudo).
  */
+/** Remove links (markdown e URLs soltas) — o portal não encaminha o leitor a sites de terceiros. */
+export function stripLinks(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\(https?:\/\/[^)]*\)/g, '$1')
+    .replace(/\(?https?:\/\/[^\s)]+\)?/g, '')
+    .replace(/[ \t]{2,}/g, ' ');
+}
+
 export function ArticleBody({ content }: { content: string | null }) {
   if (!content) return null;
-  const blocks = content.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
+  const blocks = stripLinks(content).split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
   return (
     <div className="prose-body">
       {blocks.map((b, i) => {

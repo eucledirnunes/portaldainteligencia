@@ -28,7 +28,7 @@ export function Kicker({ a }: { a: CardArticle }) {
 function Meta({ a }: { a: CardArticle }) {
   return (
     <p className="meta">
-      <span className="font-medium text-ink/70">Por {a.author.name}</span>
+      <span className="font-medium text-ink/70">Por {a.agent.name} <span className="text-muted">(IA)</span></span>
       {a.published_at && ' · '}
       {a.published_at && <time dateTime={a.published_at}>{timeAgo(a.published_at)}</time>}
     </p>

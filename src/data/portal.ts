@@ -1,7 +1,6 @@
 import { getPublicClient } from '@/lib/supabase/clients';
 import type { CategoryRow, CompanyRow, ModelRow } from '@/domain/types';
-import { getAuthorForCategory, type Author } from '@/lib/authors';
-import { creditFor } from '@/lib/credit';
+import { ALL_AGENTS, getAgentFor, type Agent } from '@/lib/agents';
 
 /**
  * Camada de leitura do portal público. Usa o cliente anon (RLS): só enxerga artigos publicados.
@@ -15,7 +14,7 @@ export interface CardArticle {
   featured_image: string | null;
   published_at: string | null;
   category: { name: string; slug: string } | null;
-  author: Author;
+  agent: Agent;
   eventId: string | null;
   trend: number;
   importance: number;
@@ -30,12 +29,10 @@ export interface ArticleDetail extends CardArticle {
   generated_by: string;
   companies: CompanyRow[];
   models: ModelRow[];
-  /** Veículo a creditar em texto simples (só quando a notícia vem de um único veículo); ver src/lib/credit.ts. */
-  credit: string | null;
 }
 
 const CARD_SELECT =
-  'id, slug, title, summary, featured_image, published_at, event_id, categories(name, slug), news_events(trend_score, importance_score)';
+  'id, slug, title, summary, featured_image, published_at, event_id, categories(name, slug), news_events(trend_score, importance_score, event_companies(companies(slug)))';
 
 type Row = Record<string, any>;
 const one = <T>(v: T | T[] | null | undefined): T | null => (Array.isArray(v) ? v[0] ?? null : v ?? null);
@@ -43,6 +40,7 @@ const one = <T>(v: T | T[] | null | undefined): T | null => (Array.isArray(v) ? 
 function toCards(rows: Row[]): CardArticle[] {
   return rows.map((r) => {
     const ev = one<Row>(r.news_events);
+    const companySlugs = ((ev?.event_companies ?? []) as Row[]).map((ec) => one<{ slug: string }>(ec.companies)?.slug).filter((x): x is string => !!x);
     return {
       id: r.id,
       slug: r.slug,
@@ -51,7 +49,7 @@ function toCards(rows: Row[]): CardArticle[] {
       featured_image: r.featured_image,
       published_at: r.published_at,
       category: one(r.categories),
-      author: getAuthorForCategory(one<{ name: string; slug: string }>(r.categories)?.slug ?? null),
+      agent: getAgentFor(one<{ name: string; slug: string }>(r.categories)?.slug ?? null, companySlugs),
       eventId: r.event_id ?? null,
       trend: ev?.trend_score ?? 0,
       importance: ev?.importance_score ?? 0,
@@ -114,8 +112,7 @@ export async function getArticle(slug: string): Promise<ArticleDetail | null> {
   const [card] = toCards([data as Row]);
   const row = data as Row;
 
-  const [src, comp, mod] = await Promise.all([
-    db.from('article_sources').select('source_name').eq('article_id', row.id),
+  const [comp, mod] = await Promise.all([
     row.event_id ? db.from('event_companies').select('companies(*)').eq('event_id', row.event_id) : Promise.resolve({ data: [] }),
     row.event_id ? db.from('event_models').select('models(*)').eq('event_id', row.event_id) : Promise.resolve({ data: [] }),
   ]);
@@ -127,7 +124,6 @@ export async function getArticle(slug: string): Promise<ArticleDetail | null> {
     seo_title: row.seo_title,
     seo_description: row.seo_description,
     generated_by: row.generated_by,
-    credit: creditFor(((src.data ?? []) as { source_name: string }[]).map((s) => s.source_name)),
     companies: ((comp.data ?? []) as Row[]).map((r) => one<CompanyRow>(r.companies)).filter((c): c is CompanyRow => !!c),
     models: ((mod.data ?? []) as Row[]).map((r) => one<ModelRow>(r.models)).filter((m): m is ModelRow => !!m),
   };
@@ -245,4 +241,23 @@ export async function getHourlyCounts(hours = 6): Promise<{ label: string; count
   }
   const fmt = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
   return buckets.map((b) => ({ label: fmt.format(new Date(b.start + 3_600_000)), count: b.count }));
+}
+
+export interface AgentStatus { agent: Agent; count24h: number; lastAt: string | null }
+
+/** Status da redação de agentes: matérias publicadas nas últimas 24 h por agente (todos aparecem, inclusive os parados). */
+export async function getAgentStatuses(): Promise<AgentStatus[]> {
+  const db = getPublicClient();
+  const byId = new Map<string, AgentStatus>(ALL_AGENTS.map((agent) => [agent.id, { agent, count24h: 0, lastAt: null }]));
+  if (db) {
+    const since = new Date(Date.now() - 24 * 3_600_000).toISOString();
+    const { data } = await db.from('articles').select(CARD_SELECT).eq('status', 'published').gte('published_at', since).order('published_at', { ascending: false }).limit(1000);
+    for (const c of toCards((data ?? []) as Row[])) {
+      const st = byId.get(c.agent.id);
+      if (!st) continue;
+      st.count24h++;
+      st.lastAt ??= c.published_at;
+    }
+  }
+  return [...byId.values()];
 }

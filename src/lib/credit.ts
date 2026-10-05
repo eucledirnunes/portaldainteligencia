@@ -1,9 +1,8 @@
 import { fold } from '@/lib/utils/text';
 
 /**
- * Política de crédito ("meio-termo"): o veículo só é citado, em texto simples e sem link, quando a
- * notícia vem de UM único veículo. Com dois ou mais veículos o fato é considerado noticiado de forma
- * ampla: nenhum é citado e o texto atribui as declarações a quem as fez ("segundo a OpenAI").
+ * Política de crédito: o portal não cita nem linka veículos de imprensa; o texto atribui as
+ * declarações a quem as fez ("segundo a OpenAI"). Aqui ficam os helpers que detectam menções.
  */
 
 /** "The Verge AI" -> "The Verge"; "MIT News: Inteligência Artificial" -> "MIT News". */
@@ -11,13 +10,6 @@ export function cleanOutletName(name: string): string {
   return name.split(':')[0].replace(/\s+(AI|IA)$/i, '').trim();
 }
 
-/** Nome a exibir como crédito, ou null quando não deve haver crédito (0 ou 2+ veículos distintos). */
-export function creditFor(sourceNames: string[]): string | null {
-  const distinct = [...new Set(sourceNames.map((n) => cleanOutletName(n)).filter(Boolean))];
-  return distinct.length === 1 ? distinct[0] : null;
-}
-
-// Nomes de veículos que também são expressões comuns: citar "inovação tecnológica" não é citar o portal.
 const AMBIGUOUS = new Set(['transformer', 'wired', 'guardian', 'conversation', 'spectrum', 'inovacao tecnologica', 'ai business']);
 
 /**

@@ -246,19 +246,13 @@ describe('detectEncoding', () => {
   });
 });
 
-import { cleanOutletName, creditFor, findOutletMentions } from '@/lib/credit';
+import { cleanOutletName, findOutletMentions } from '@/lib/credit';
 
-describe('crédito de fontes (meio-termo)', () => {
+describe('menções a veículos', () => {
   it('limpa o nome do veículo para exibição', () => {
     expect(cleanOutletName('The Verge AI')).toBe('The Verge');
     expect(cleanOutletName('MIT News: Inteligência Artificial')).toBe('MIT News');
     expect(cleanOutletName('IA Brasil Notícias')).toBe('IA Brasil Notícias');
-  });
-  it('credita só quando há um único veículo', () => {
-    expect(creditFor([])).toBeNull();
-    expect(creditFor(['TechCrunch AI'])).toBe('TechCrunch');
-    expect(creditFor(['TechCrunch AI', 'TechCrunch AI'])).toBe('TechCrunch');
-    expect(creditFor(['TechCrunch AI', 'The Verge AI'])).toBeNull();
   });
   it('detecta veículos citados no texto, sem falso positivo em palavras comuns', () => {
     const outlets = ['TechCrunch AI', 'The Verge AI', 'Transformer', 'Inovação Tecnológica', 'Wired AI'];

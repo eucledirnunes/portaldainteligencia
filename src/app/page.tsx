@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArticleCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
 import {
-  getCategory, getCompanies, getFeed, getHourlyCounts, getPublicStats, getTrending, type CardArticle,
+  getAgentStatuses, getCategory, getCompanies, getFeed, getHourlyCounts, getPublicStats, getTrending, type CardArticle,
 } from '@/data/portal';
 import { formatClock, timeAgo } from '@/lib/format';
 
@@ -21,12 +21,13 @@ const SECTORS = [
 ] as const;
 
 export default async function Home() {
-  const [latest, trending, stats, hourly, companies, ...sectors] = await Promise.all([
+  const [latest, trending, stats, hourly, companies, agents, ...sectors] = await Promise.all([
     getFeed({ limit: 40 }),
     getTrending(4),
     getPublicStats(),
     getHourlyCounts(6),
     getCompanies(),
+    getAgentStatuses(),
     ...SECTORS.map((s) => sectionFeed(s.slug)),
   ]);
 
@@ -106,7 +107,7 @@ export default async function Home() {
                 Bastidores da redação
               </h2>
               <p className="mt-1 text-xs leading-snug text-slate-300">
-                Este portal não tem repórteres humanos: um pipeline de inteligência artificial coleta, agrupa e redige as matérias. Números das últimas 24 h.
+                Este portal não tem repórteres humanos: é uma redação de agentes de inteligência artificial. Cada agente cobre uma empresa ou editoria. Números das últimas 24 h.
               </p>
               <dl className="mt-3 space-y-2 font-mono text-[0.72rem]">
                 {[
@@ -120,6 +121,18 @@ export default async function Home() {
                   </div>
                 ))}
               </dl>
+              <h3 className="mt-4 text-[0.62rem] font-semibold uppercase tracking-wider text-slate-400">Agentes repórteres</h3>
+              <ul className="mt-2 max-h-72 space-y-1 overflow-y-auto pr-1 font-mono text-[0.7rem]">
+                {agents.map(({ agent, count24h }) => (
+                  <li key={agent.id} className="flex items-center justify-between gap-2 rounded bg-navy px-2.5 py-1.5">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${count24h ? 'bg-ok' : 'bg-slate-500'}`} />
+                      <span className="truncate"><b className="text-white">{agent.name}</b> <span className="font-sans text-slate-400">{agent.beat}</span></span>
+                    </span>
+                    <span className={`shrink-0 font-bold ${count24h ? 'text-ok' : 'text-slate-500'}`}>{count24h ? `${count24h} mat.` : 'em espera'}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
         </aside>

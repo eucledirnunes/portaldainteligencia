@@ -1,3 +1,4 @@
+import { findOutletMentions } from '@/lib/credit';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { looksPortuguese, slugify, stripHtml, stripPromo, truncate } from '@/lib/utils/text';
 import { loadCoverPool, pickCover } from './covers-pool';
@@ -84,7 +85,7 @@ function pickStatus(g: GeneratedArticle, autoPublish: boolean): 'draft' | 'revie
 export async function generateArticles(
   db: SupabaseClient,
   svc: EditorialServices,
-  opts: { limit?: number; autoPublish?: boolean; improve?: boolean; redo?: boolean } = {},
+  opts: { limit?: number; autoPublish?: boolean; improve?: boolean; redo?: boolean; mentions?: boolean } = {},
 ): Promise<EditorialStats> {
   const stats: EditorialStats = { generated: 0, published: 0, heldNotPt: 0, failed: 0 };
   const autoPublish = opts.autoPublish ?? process.env.EDITORIAL_AUTO_PUBLISH === 'true';
@@ -141,17 +142,22 @@ export async function generateArticles(
   if (opts.improve && svc.provider.name !== 'none') {
     let q = db
       .from('articles')
-      .select('id, event_id, status, title, slug, category_id, featured_image')
+      .select('id, event_id, status, title, slug, category_id, featured_image, content, summary')
       .not('event_id', 'is', null)
       .order('created_at', { ascending: false })
-      .limit(opts.redo ? 500 : limit);
-    q = opts.redo ? q.neq('generated_by', 'human') : q.eq('generated_by', 'basic');
+      .limit(opts.redo || opts.mentions ? 2000 : limit);
+    q = opts.redo || opts.mentions ? q.neq('generated_by', 'human') : q.eq('generated_by', 'basic');
     const old = await q;
     if (old.error) throw old.error;
 
     for (const art of old.data) {
       try {
         const ctx = await buildContext(db, art.event_id);
+        // --mentions: só refaz matérias cujo texto cita um veículo de imprensa das fontes.
+        if (opts.mentions && !opts.redo) {
+          const outlets = ctx.sources.filter((x) => !x.isPrimary).map((x) => x.name);
+          if (!findOutletMentions(`${art.title} ${art.summary ?? ''} ${art.content ?? ''}`, outlets).length) continue;
+        }
         const gen = await svc.generator.generate({ title: ctx.sources[0]?.title ?? art.title, sources: ctx.sources });
         if (gen.generatedBy === 'basic') { stats.failed++; continue; } // LLM falhou: mantém como está
         const ok = isPt(gen);
