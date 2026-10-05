@@ -20,8 +20,7 @@ export function Logo() {
   const highlight = words.at(-1);
   const rest = words.slice(0, -1).join(' ');
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITE.name} — página inicial`}>
-      <LogoMark />
+    <Link href="/" className="flex items-center" aria-label={`${SITE.name} — página inicial`}>
       <span className="flex flex-col leading-none">
         <span className="text-[1.35rem] font-extrabold tracking-tight text-ink">
           {rest && `${rest} `}<span className="text-accent">{highlight}</span>
