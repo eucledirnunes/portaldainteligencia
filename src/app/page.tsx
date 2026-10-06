@@ -1,6 +1,6 @@
 import { BannerCarousel } from '@/components/BannerCarousel';
 import Link from 'next/link';
-import { ArticleCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
+import { ArticleCard, CompactCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
 import {
   getAgentStatuses, getCategory, getCompanies, getFeed, getHourlyCounts, getPublicStats, getTrending, type CardArticle,
 } from '@/data/portal';
@@ -43,6 +43,8 @@ export default async function Home() {
   // Destaque: o evento mais quente das últimas horas; senão, a matéria mais recente.
   const lead = [...latest.slice(0, 30)].sort((a, b) => b.trend - a.trend)[0] ?? latest[0];
   const more = latest.filter((a) => a.id !== lead.id).slice(0, 8);
+  // Complementa a coluna do destaque (a coluna da direita é mais alta) para não sobrar espaço em branco.
+  const filler = latest.filter((a) => a.id !== lead.id).slice(10, 16);
   const maxHour = Math.max(1, ...hourly.map((h) => h.count));
 
   return (
@@ -63,6 +65,12 @@ export default async function Home() {
           <Link href={`/noticias/${lead.slug}`} className="block overflow-hidden rounded-lg bg-navy">
             <Thumb src={lead.featured_image} alt={lead.title} className="aspect-[16/9] w-full" />
           </Link>
+          {filler.length > 0 && (
+            <div className="mt-2 border-t border-line pt-4">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider">Mais notícias</h2>
+              <div className="grid gap-4 sm:grid-cols-2">{filler.map((a) => <CompactCard key={a.id} a={a} />)}</div>
+            </div>
+          )}
         </article>
 
         {/* Coluna direita: radar + bastidores */}

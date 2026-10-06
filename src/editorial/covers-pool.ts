@@ -7,7 +7,7 @@ import type { ImageProvider } from './images';
  * geramos POOL_SIZE variações por categoria UMA VEZ (npm run covers:seed) e cada matéria
  * reaproveita uma delas, escolhida de forma determinística pelo próprio id — sem custo por matéria.
  */
-export const POOL_SIZE = 4;
+export const POOL_SIZE = 12;
 export const FALLBACK_CATEGORY = 'geral';
 const BUCKET = 'article-covers';
 
