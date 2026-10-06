@@ -14,7 +14,7 @@ function Item({ q }: { q: MarketQuote }) {
 
 function WeatherItem({ w }: { w: NonNullable<Awaited<ReturnType<typeof getWeatherNow>>> }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 pr-6">
+    <span className="inline-flex shrink-0 items-center gap-1.5">
       <span aria-hidden="true">{weatherEmoji(w.icon)}</span>
       <span className="text-slate-400">{w.city}</span>
       <span className="font-semibold text-white">{w.tempC}°C</span>
@@ -24,7 +24,7 @@ function WeatherItem({ w }: { w: NonNullable<Awaited<ReturnType<typeof getWeathe
 }
 
 /**
- * Faixa de cotações + clima em looping contínuo (estilo "ticker" de TV). O conteúdo é duplicado e a
+ * Faixa com o clima fixo à esquerda e cotações em looping contínuo (estilo "ticker" de TV). As cotações são duplicadas e a
  * faixa desliza -50% num loop infinito; em prefers-reduced-motion a animação para e a faixa vira uma
  * lista normal, navegável por scroll horizontal. Some inteiramente se nada estiver configurado.
  */
@@ -34,17 +34,26 @@ export async function MarketTicker() {
 
   const row = (keyPrefix: string) => (
     <div className="flex shrink-0" aria-hidden={keyPrefix === 'dup' || undefined}>
-      {weather && <WeatherItem key={`${keyPrefix}-weather`} w={weather} />}
       {quotes.map((q) => <Item key={`${keyPrefix}-${q.symbol}`} q={q} />)}
     </div>
   );
 
+  // Clima fixo à esquerda; só as cotações rolam.
   return (
-    <div className="no-scrollbar overflow-x-auto border-t border-line bg-navy px-4 py-1.5 sm:px-6" aria-label="Clima e cotações de mercado">
-      <div className="marquee-track flex w-max font-mono text-[0.68rem]">
-        {row('main')}
-        {row('dup')}
-      </div>
+    <div className="flex items-center border-t border-line bg-navy font-mono text-[0.68rem]" aria-label="Clima e cotações de mercado">
+      {weather && (
+        <div className="z-10 shrink-0 border-r border-white/10 bg-navy py-1.5 pl-4 pr-3 sm:pl-6">
+          <WeatherItem w={weather} />
+        </div>
+      )}
+      {quotes.length > 0 && (
+        <div className="no-scrollbar min-w-0 flex-1 overflow-x-auto py-1.5 pl-3 pr-4 sm:pr-6">
+          <div className="marquee-track flex w-max">
+            {row('main')}
+            {row('dup')}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
