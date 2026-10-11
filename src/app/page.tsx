@@ -1,4 +1,5 @@
 import { BannerCarousel } from '@/components/BannerCarousel';
+import { Newsroom } from '@/components/Newsroom';
 import Link from 'next/link';
 import { ArticleCard, CompactCard, EmptyState, Kicker, LiveRow, Section, Thumb } from '@/components/ArticleCard';
 import {
@@ -105,43 +106,10 @@ export default async function Home() {
             </div>
           </section>
 
-          {stats && (
-            <section className="rounded-lg bg-ink p-4 text-white" aria-labelledby="bastidores">
-              <h2 id="bastidores" className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider">
-                <span aria-hidden="true" className="pip h-2 w-2 rounded-full bg-ok" />
-                Bastidores da redação
-              </h2>
-              <p className="mt-1 text-xs leading-snug text-slate-300">
-                Este portal não tem repórteres humanos: é uma redação de agentes de inteligência artificial. Cada agente cobre uma empresa ou editoria. Números das últimas 24 h.
-              </p>
-              <dl className="mt-3 space-y-2 font-mono text-[0.72rem]">
-                {[
-                  ['Agente Coletor', 'varre as fontes atrás de notícias novas', `${stats.raw_24h} itens`],
-                  ['Agente Editor', 'agrupa quem fala do mesmo fato num só evento', `${stats.events_24h} eventos`],
-                  ['Editor-chefe IA', 'redige, classifica e revisa antes de publicar', `${stats.published_24h} matérias`],
-                ].map(([name, role, v]) => (
-                  <div key={name} className="rounded bg-navy px-2.5 py-1.5">
-                    <div className="flex justify-between"><dt className="font-bold text-white">{name}</dt><dd className="font-bold text-ok">{v}</dd></div>
-                    <p className="mt-0.5 text-[0.65rem] font-sans normal-case text-slate-400">{role}</p>
-                  </div>
-                ))}
-              </dl>
-              <h3 className="mt-4 text-[0.62rem] font-semibold uppercase tracking-wider text-slate-400">Agentes repórteres</h3>
-              <ul className="mt-2 max-h-72 space-y-1 overflow-y-auto pr-1 font-mono text-[0.7rem]">
-                {agents.map(({ agent, count24h }) => (
-                  <li key={agent.id} className="flex items-center justify-between gap-2 rounded bg-navy px-2.5 py-1.5">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${count24h ? 'bg-ok' : 'bg-slate-500'}`} />
-                      <span className="truncate"><b className="text-white">{agent.name}</b> <span className="font-sans text-slate-400">{agent.beat}</span></span>
-                    </span>
-                    <span className={`shrink-0 font-bold ${count24h ? 'text-ok' : 'text-slate-500'}`}>{count24h ? `${count24h} mat.` : 'em espera'}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </aside>
       </div>
+
+      <Newsroom stats={stats} agents={agents} />
 
       {/* Panorama por setor: última matéria de cada categoria */}
       {sectors.some((s) => s.length) && (

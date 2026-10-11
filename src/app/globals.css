@@ -57,8 +57,20 @@
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Redação ao vivo (Newsroom.tsx): personagens em pixel art, animação só em CSS. */
+@keyframes nr-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes nr-dot { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes nr-zzz { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@keyframes nr-packet { from { left: 0; opacity: 0; } 10%, 90% { opacity: 1; } to { left: calc(100% - 7px); opacity: 0; } }
+.nr-active .nr-sprite { animation: nr-bob 0.5s steps(2, jump-none) infinite; }
+.nr-dot { display: block; animation: nr-dot 1s ease-in-out infinite; }
+.nr-zzz { animation: nr-zzz 2.4s ease-in-out infinite; }
+.nr-packet { animation: nr-packet 2.4s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .pip { animation: none; }
   .marquee-track { animation: none; }
+  .nr-active .nr-sprite, .nr-dot, .nr-zzz, .nr-packet { animation: none; }
+  .nr-packet { left: 45%; opacity: 1; }
   html { scroll-behavior: auto; }
 }

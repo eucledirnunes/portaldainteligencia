@@ -243,20 +243,26 @@ export async function getHourlyCounts(hours = 6): Promise<{ label: string; count
   return buckets.map((b) => ({ label: fmt.format(new Date(b.start + 3_600_000)), count: b.count }));
 }
 
-export interface AgentStatus { agent: Agent; count24h: number; lastAt: string | null }
+export interface AgentStatus { agent: Agent; count24h: number; lastAt: string | null; lastTitle: string | null; lastSlug: string | null }
 
-/** Status da redação de agentes: matérias publicadas nas últimas 24 h por agente (todos aparecem, inclusive os parados). */
+/** Status da redação de agentes: matérias das últimas 24 h por agente. lastAt é quando o agente escreveu (created_at), não a hora da fonte. */
 export async function getAgentStatuses(): Promise<AgentStatus[]> {
   const db = getPublicClient();
-  const byId = new Map<string, AgentStatus>(ALL_AGENTS.map((agent) => [agent.id, { agent, count24h: 0, lastAt: null }]));
+  const byId = new Map<string, AgentStatus>(ALL_AGENTS.map((agent) => [agent.id, { agent, count24h: 0, lastAt: null, lastTitle: null, lastSlug: null }]));
   if (db) {
     const since = new Date(Date.now() - 24 * 3_600_000).toISOString();
-    const { data } = await db.from('articles').select(CARD_SELECT).eq('status', 'published').gte('published_at', since).order('published_at', { ascending: false }).limit(1000);
-    for (const c of toCards((data ?? []) as Row[])) {
+    const { data } = await db.from('articles').select(`${CARD_SELECT}, created_at`).eq('status', 'published').gte('created_at', since).order('created_at', { ascending: false }).limit(1000);
+    const rows = (data ?? []) as Row[];
+    const createdById = new Map(rows.map((r) => [r.id as string, r.created_at as string]));
+    for (const c of toCards(rows)) {
       const st = byId.get(c.agent.id);
       if (!st) continue;
       st.count24h++;
-      st.lastAt ??= c.published_at;
+      if (!st.lastAt) {
+        st.lastAt = createdById.get(c.id) ?? c.published_at;
+        st.lastTitle = c.title;
+        st.lastSlug = c.slug;
+      }
     }
   }
   return [...byId.values()];
