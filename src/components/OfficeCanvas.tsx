@@ -25,6 +25,8 @@ export interface OfficeAgent {
 const W = COLS * TILE;
 const H = ROWS * TILE;
 const SITTING_OFFSET = 6;
+/** Em telas estreitas o escritório mantém um tamanho legível e rola para os lados. */
+const MIN_W = 760;
 const PC_FRAMES = ['PC_FRONT_ON_1', 'PC_FRONT_ON_2', 'PC_FRONT_ON_3'];
 
 function hslToRgb(h: number, s: number, l: number): [number, number, number] {
@@ -82,7 +84,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const avail = el.clientWidth;
-      setBoxW(Math.min(avail, W * 3));
+      setBoxW(Math.max(MIN_W, Math.min(avail, W * 3)));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -256,7 +258,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
 
   const pct = (v: number, total: number) => `${(v / total) * 100}%`;
   return (
-    <div ref={boxRef} className="w-full">
+    <div ref={boxRef} className="w-full overflow-x-auto overscroll-x-contain pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div className="relative mx-auto overflow-hidden rounded-lg bg-[#0b1220]" style={{ width: boxW, aspectRatio: `${W} / ${H}` }}>
         <canvas
           ref={canvasRef} width={W} height={H} className="absolute inset-0 h-full w-full"
