@@ -204,8 +204,8 @@ describe('pool de capas por categoria', () => {
     expect(p0).not.toBe(p1);
     expect(p0.toLowerCase()).toContain('negócios'.toLowerCase());
   });
-  it('POOL_SIZE é 4, conforme combinado', () => {
-    expect(POOL_SIZE).toBe(4);
+  it('POOL_SIZE é 12 (12 variações por categoria)', () => {
+    expect(POOL_SIZE).toBe(12);
   });
 });
 

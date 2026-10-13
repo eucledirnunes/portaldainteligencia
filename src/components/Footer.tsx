@@ -17,6 +17,7 @@ export function Footer() {
           <ul className="space-y-2 text-sm text-muted">
             <li><Link href="/ultimas" className="hover:text-ink">Últimas</Link></li>
             <li><Link href="/radar" className="hover:text-ink">Radar de assuntos em alta</Link></li>
+            <li><Link href="/redacao" className="hover:text-ink">Redação ao vivo</Link></li>
             <li><Link href="/modelos" className="hover:text-ink">Modelos</Link></li>
             <li><Link href="/empresas" className="hover:text-ink">Empresas</Link></li>
           </ul>

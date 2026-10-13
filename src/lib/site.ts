@@ -11,6 +11,7 @@ export const SITE = {
 export const NAV = [
   { label: 'Últimas', href: '/ultimas' },
   { label: 'Radar', href: '/radar' },
+  { label: 'Redação ao vivo', href: '/redacao' },
   { label: 'Modelos', href: '/modelos' },
   { label: 'Empresas', href: '/empresas' },
   { label: 'Ferramentas', href: '/categoria/ferramentas' },

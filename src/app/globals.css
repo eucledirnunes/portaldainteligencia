@@ -66,8 +66,29 @@
 .nr-floor { background: repeating-conic-gradient(#14203a 0 25%, #111b33 0 50%) 0 0 / 28px 28px; }
 .nr-cell { background: rgba(10, 14, 23, 0.55); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden; }
 .nr-cell-main { border-color: rgba(78, 222, 163, 0.35); background: rgba(10, 14, 23, 0.7); }
-.nr-corridor { position: relative; height: 40px; margin: 10px 0 12px; border-top: 2px dashed rgba(255,255,255,0.08); border-bottom: 2px dashed rgba(255,255,255,0.08); overflow: hidden; }
+.nr-corridor { position: relative; height: 76px; margin: 10px 0 12px; border-top: 2px dashed rgba(255,255,255,0.08); border-bottom: 2px dashed rgba(255,255,255,0.08); overflow: hidden; }
 .nr-walker { position: absolute; bottom: 4px; left: -6%; }
+.nr-carry { position: absolute; left: 50%; top: 52%; width: 10px; height: 8px; border: 1px solid rgba(0,0,0,0.35); }
+
+/* Sprites dos personagens (folha 112x96: 7 colunas x 3 linhas de 16x32). --s = escala inteira. */
+.px-sprite { width: calc(16px * var(--s)); height: calc(32px * var(--s)); background-repeat: no-repeat; background-size: calc(112px * var(--s)) calc(96px * var(--s)); image-rendering: pixelated; }
+.px-type { background-position: calc(-48px * var(--s)) 0; animation: px-type 0.5s steps(2) infinite; }
+.px-read { background-position: calc(-80px * var(--s)) 0; animation: px-read 1.6s steps(2) infinite; }
+.px-still { background-position: calc(-48px * var(--s)) 0; }
+.px-walk { background-position: 0 calc(-64px * var(--s)); animation: px-walk 0.6s steps(3) infinite; }
+@keyframes px-type { from { background-position: calc(-48px * var(--s)) 0; } to { background-position: calc(-80px * var(--s)) 0; } }
+@keyframes px-read { from { background-position: calc(-80px * var(--s)) 0; } to { background-position: calc(-112px * var(--s)) 0; } }
+@keyframes px-walk { from { background-position: 0 calc(-64px * var(--s)); } to { background-position: calc(-48px * var(--s)) calc(-64px * var(--s)); } }
+
+/* Cena da mesa */
+.nr-scene { position: relative; height: 124px; overflow: hidden; }
+.nr-sitter { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); }
+.nr-asleep { transform: translate(-50%, 14px); filter: brightness(0.6); }
+.nr-desk { position: absolute; left: 12%; right: 12%; bottom: 0; height: 30px; background: #8a5a35; border-top: 4px solid #b07a4a; box-shadow: 0 -2px 0 rgba(0,0,0,0.25); }
+.nr-laptop { position: absolute; left: 50%; top: -12px; width: 24px; height: 14px; transform: translateX(-50%); background: #3b4766; border: 2px solid #26324f; }
+.nr-laptop i { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--glow); }
+.nr-blink { animation: nr-dot 1s ease-in-out infinite; }
+.nr-paper { position: absolute; right: 14%; bottom: 6px; width: 16px; height: 11px; background: #e9edf5; transform: rotate(-6deg); }
 .nr-walk-r { animation: nr-walk-r 16s linear infinite; }
 .nr-walk-l { animation: nr-walk-l 16s linear infinite; }
 @keyframes nr-walk-r { from { left: -6%; } to { left: 104%; } }
@@ -90,7 +111,7 @@
 @media (prefers-reduced-motion: reduce) {
   .pip { animation: none; }
   .marquee-track { animation: none; }
-  .nr-walker, .nr-step, .nr-leg-a, .nr-leg-b, .nr-lines, .nr-typing .nr-hand-l, .nr-typing .nr-hand-r, .nr-dot, .nr-zzz, .nr-star { animation: none !important; }
+  .nr-walker, .px-sprite, .nr-step, .nr-leg-a, .nr-leg-b, .nr-lines, .nr-typing .nr-hand-l, .nr-typing .nr-hand-r, .nr-dot, .nr-blink, .nr-zzz, .nr-star { animation: none !important; }
   .nr-walker { left: 40%; }
   html { scroll-behavior: auto; }
 }

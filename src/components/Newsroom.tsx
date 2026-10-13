@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { AgentStatus, PublicStats } from '@/data/portal';
+import { ALL_AGENTS } from '@/lib/agents';
 import { timeAgo } from '@/lib/format';
 
 /**
@@ -9,16 +10,13 @@ import { timeAgo } from '@/lib/format';
  * Mensageiros que andam pelo corredor são decorativos. Animação 100% CSS e desligada em prefers-reduced-motion.
  */
 
-const SKIN = ['#f5cba7', '#e0ac69', '#c68642', '#8d5524', '#ffdbac'];
-const HAIR = ['#2c1b0e', '#6b3e1d', '#d4a017', '#b5451b', '#1b1b1b', '#8a8a8a', '#3b6ea5'];
-const SHIRT = ['#0051D5', '#4EDEA3', '#f08a3c', '#9b5de5', '#e5446d', '#4aa8e8', '#f2c14e'];
-
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
-function palette(seed: string) {
-  const h = hash(seed);
-  return { hair: HAIR[h % HAIR.length], skin: SKIN[(h >> 3) % SKIN.length], shirt: SHIRT[(h >> 6) % SHIRT.length], h };
-}
+/** Personagens do projeto Pixel Agents (MIT), baseados no pacote Metro City de JIK-A-4 (CC0): public/agents/char_0..5.png. */
+const CHARACTERS = 6;
+const AGENT_INDEX = new Map(ALL_AGENTS.map((a, i) => [a.id, i]));
+/** Distribui os 6 personagens em sequência pelos agentes (evita sorteios repetidos lado a lado). */
+const charOf = (seed: string) => (AGENT_INDEX.get(seed) ?? hash(seed)) % CHARACTERS;
 
 type Mood = 'active' | 'idle' | 'sleep';
 
@@ -27,70 +25,41 @@ function moodOf(lastAt: string | null, count: number): Mood {
   return Date.now() - new Date(lastAt).getTime() <= 60 * 60_000 ? 'active' : 'idle';
 }
 
-const SCREEN_LINES = [8, 5, 9, 6, 8, 4, 7, 9];
-
-/** Mesa vista de cima/atrás: monitor ao fundo, agente de costas na cadeira, teclado à frente. */
-function DeskScene({ seed, mood, accent = '#4EDEA3' }: { seed: string; mood: Mood; accent?: string }) {
-  const { hair, skin, shirt, h } = palette(seed);
-  const asleep = mood === 'sleep';
-  const typing = mood === 'active';
-  const screen = asleep ? '#0a0f1c' : typing ? '#0e2a2a' : '#14213d';
-  const clip = `nr-clip-${seed}`;
-  const headY = asleep ? 13 : 11;
-  const lineColor = typing ? accent : '#4a5878';
+/** Sprite 16x32 recortado da folha 7x3 do personagem; a animação (digitar/ler/andar) é CSS (classes px-*). */
+function Sprite({ seed, anim, scale, flip = false }: { seed: string; anim: 'type' | 'read' | 'walk' | 'still'; scale: number; flip?: boolean }) {
   return (
-    <svg viewBox="0 0 24 22" className={`nr-scene w-full ${typing ? 'nr-typing' : ''}`} shapeRendering="crispEdges" aria-hidden="true">
-      <defs><clipPath id={clip}><rect x="6" y="1" width="12" height="6" /></clipPath></defs>
-      {/* cadeira */}
-      <rect x="7" y="14" width="10" height="8" fill="#26324f" />
-      <rect x="8" y="13" width="8" height="1" fill="#26324f" />
-      {/* monitor */}
-      <rect x="5" y="0" width="14" height="8" fill="#3b4766" />
-      <rect x="6" y="1" width="12" height="6" fill={screen} />
-      {!asleep && (
-        <g clipPath={`url(#${clip})`}>
-          <g className={typing ? 'nr-lines' : ''}>
-            {SCREEN_LINES.concat(SCREEN_LINES).map((w, i) => (
-              <rect key={i} x="7" y={2 + i * 2} width={Math.min(10, w + (h % 3))} height="1" fill={lineColor} opacity={typing ? 0.95 : 0.55} />
-            ))}
-          </g>
-        </g>
-      )}
-      <rect x="11" y="8" width="2" height="1" fill="#3b4766" />
-      {/* mesa e teclado */}
-      <rect x="1" y="9" width="22" height="3" fill="#8a5a35" />
-      <rect x="1" y="9" width="22" height="1" fill="#b07a4a" />
-      <rect x="8" y="10" width="8" height="1" fill="#d9dde8" />
-      {/* corpo */}
-      <rect x="8" y="17" width="8" height="5" fill={shirt} />
-      <rect x="7" y="14" width="1" height="4" fill={shirt} />
-      <rect x="16" y="14" width="1" height="4" fill={shirt} />
-      <rect className="nr-hand-l" x="7" y="12" width="1" height="2" fill={skin} />
-      <rect className="nr-hand-r" x="16" y="12" width="1" height="2" fill={skin} />
-      {/* cabeça (de costas: só cabelo e orelhas) */}
-      <rect x="9" y={headY} width="6" height="5" fill={hair} />
-      <rect x="8" y={headY + 2} width="1" height="1" fill={skin} />
-      <rect x="15" y={headY + 2} width="1" height="1" fill={skin} />
-      {!asleep && <rect x="11" y={headY + 5} width="2" height="1" fill={skin} />}
-    </svg>
+    <div
+      className={`px-sprite px-${anim}`}
+      style={{ ['--s' as string]: scale, backgroundImage: `url(/agents/char_${charOf(seed)}.png)`, transform: flip ? 'scaleX(-1)' : undefined }}
+      aria-hidden="true"
+    />
+  );
+}
+
+/** Mesa em pixel art com o agente sentado atrás: digita (ativo), lê (parado) ou cochila (sem matéria em 24 h). */
+function DeskScene({ seed, mood, accent = '#4EDEA3' }: { seed: string; mood: Mood; accent?: string }) {
+  const typing = mood === 'active';
+  const asleep = mood === 'sleep';
+  return (
+    <div className="nr-scene" aria-hidden="true">
+      <div className={`nr-sitter ${asleep ? 'nr-asleep' : ''}`}>
+        <Sprite seed={seed} anim={typing ? 'type' : asleep ? 'still' : 'read'} scale={3} />
+      </div>
+      <div className="nr-desk">
+        <div className="nr-laptop" style={{ ['--glow' as string]: asleep ? '#0a0f1c' : accent }}>
+          <i className={typing ? 'nr-blink' : ''} />
+        </div>
+        <span className="nr-paper" />
+      </div>
+    </div>
   );
 }
 
 function Walker({ seed, dir, delay, carry }: { seed: string; dir: 'r' | 'l'; delay: number; carry: string }) {
-  const { hair, skin, shirt } = palette(seed);
   return (
     <div className={`nr-walker ${dir === 'r' ? 'nr-walk-r' : 'nr-walk-l'}`} style={{ animationDelay: `${delay}s` }} aria-hidden="true">
-      <svg viewBox="0 0 10 11" width="26" height="29" shapeRendering="crispEdges" className="nr-step" style={{ transform: dir === 'l' ? 'scaleX(-1)' : undefined }}>
-        <rect x="3" y="0" width="4" height="2" fill={hair} />
-        <rect x="3" y="2" width="4" height="2" fill={skin} />
-        <rect x="4" y="3" width="1" height="1" fill="#111827" />
-        <rect x="6" y="3" width="1" height="1" fill="#111827" />
-        <rect x="2" y="4" width="6" height="4" fill={shirt} />
-        <rect x="1" y="5" width="1" height="2" fill={skin} />
-        <rect x="8" y="5" width="3" height="3" fill={carry} />
-        <rect className="nr-leg-a" x="3" y="8" width="1" height="3" fill="#1f2a44" />
-        <rect className="nr-leg-b" x="6" y="8" width="1" height="3" fill="#1f2a44" />
-      </svg>
+      <Sprite seed={seed} anim="walk" scale={2} flip={dir === 'l'} />
+      <span className="nr-carry" style={{ background: carry }} />
     </div>
   );
 }
@@ -186,6 +155,7 @@ export function Newsroom({ stats, agents }: { stats: PublicStats | null; agents:
         <p className="mt-1 max-w-3xl text-xs leading-snug text-slate-300">
           Este portal não tem repórteres humanos: é uma redação de agentes de inteligência artificial. Quem escreveu na última hora
           está digitando; quem não publicou nada em 24 h cochila. Os dados vêm do pipeline real.
+          <span className="block text-[0.6rem] text-slate-500">Personagens: Pixel Agents (MIT), a partir do pacote Metro City, de JIK-A-4 (CC0).</span>
         </p>
         <div className="mt-3 flex items-end gap-2 sm:gap-4" aria-hidden="true">
           <Window sky={sky} night={night} />
@@ -225,7 +195,10 @@ export function Newsroom({ stats, agents }: { stats: PublicStats | null; agents:
           <Walker seed="mensageiro-3" dir="r" delay={-11} carry="#cfe8ff" />
         </div>
 
-        <h3 className="mb-2 text-[0.62rem] font-semibold uppercase tracking-wider text-slate-400">Agentes repórteres</h3>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-[0.62rem] font-semibold uppercase tracking-wider text-slate-400">Agentes repórteres</h3>
+          <Link href="/redacao" className="font-mono text-[0.7rem] font-semibold text-ok hover:underline">Ver o escritório completo →</Link>
+        </div>
         <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
           {agents.map((s) => <Cell key={s.agent.id} s={s} />)}
         </ul>
