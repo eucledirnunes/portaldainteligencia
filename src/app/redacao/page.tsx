@@ -4,6 +4,7 @@ import type { OfficeAgent } from '@/components/OfficeCanvas';
 import { getAgentStatuses, getPublicStats } from '@/data/portal';
 import { timeAgo } from '@/lib/format';
 import type { Mood } from '@/lib/office/engine';
+import { DESK_ORDER } from '@/lib/office/layout';
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -26,23 +27,23 @@ export default async function RedacaoPage() {
   const stations: OfficeAgent[] = [
     {
       id: 'coletor', name: 'Agente Coletor', beat: 'Varre as fontes atrás de notícias novas', mood: collectorActive ? 'active' : 'idle',
-      desk: 0, sprite: 0, station: true,
+      desk: DESK_ORDER.indexOf('coletor'), sprite: 0, station: true,
       status: stats ? `${stats.raw_24h} itens em 24 h${stats.last_checked_at ? ` · varreu ${timeAgo(stats.last_checked_at)}` : ''}` : 'sem dados',
     },
     {
       id: 'editor', name: 'Agente Editor', beat: 'Agrupa quem fala do mesmo fato num só evento', mood: collectorActive ? 'active' : 'idle',
-      desk: 1, sprite: 1, station: true, status: stats ? `${stats.events_24h} eventos em 24 h` : 'sem dados',
+      desk: DESK_ORDER.indexOf('editor'), sprite: 1, station: true, status: stats ? `${stats.events_24h} eventos em 24 h` : 'sem dados',
     },
     {
       id: 'editor-chefe', name: 'Editor-chefe IA', beat: 'Redige, classifica e revisa antes de publicar', mood: editorActive ? 'active' : 'idle',
-      desk: 2, sprite: 2, station: true,
+      desk: DESK_ORDER.indexOf('editor-chefe'), sprite: 2, station: true,
       status: stats ? `${stats.published_24h} matérias em 24 h${recentWrite ? ` · escreveu ${timeAgo(recentWrite)}` : ''}` : 'sem dados',
     },
   ];
   const reporters: OfficeAgent[] = statuses.map((s, i) => {
     const mood = moodOf(s.lastAt, s.count24h);
     return {
-      id: s.agent.id, name: s.agent.name, beat: s.agent.beat, mood, desk: stations.length + i, sprite: (stations.length + i) % 6,
+      id: s.agent.id, name: s.agent.name, beat: s.agent.beat, mood, desk: DESK_ORDER.indexOf(s.agent.id), sprite: DESK_ORDER.indexOf(s.agent.id) % 6,
       status: s.count24h ? `${s.count24h} em 24 h · ${timeAgo(s.lastAt)}` : 'sem matérias em 24 h',
       lastTitle: s.lastTitle, lastSlug: s.lastSlug,
     };

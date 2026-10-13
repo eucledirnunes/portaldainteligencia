@@ -2,15 +2,14 @@
  * Mapa do escritório da tela /redacao (peças do projeto Pixel Agents, MIT; ver public/office/CREDITS.txt).
  * Dados puros (sem DOM) para poder testar a conectividade do mapa. Unidade: tiles de 16 px.
  *
- * Convenção (a mesma do Pixel Agents): a mesa fica ao norte, o PC tem a tela virada para a câmera e o agente
- * senta no banco ao sul da mesa, de costas, olhando para cima.
+ * O prédio tem salas por departamento, ligadas por portas. Convenção de cada mesa (a mesma do Pixel Agents):
+ * mesa ao norte, PC com a tela virada para a câmera, agente sentado no banco ao sul, de costas.
+ * As paredes têm 2 tiles de altura visual (o sprite avança um tile para cima), por isso a linha acima de
+ * cada parede horizontal é "cobertura" (vazia) e a decoração fica nessa faixa.
  */
 export const TILE = 16;
-export const COLS = 31;
-export const ROWS = 26;
-export const DESK_COLS = 7;
-export const DESK_ROWS = 4;
-export const DESK_COUNT = DESK_COLS * DESK_ROWS;
+export const COLS = 43;
+export const ROWS = 27;
 
 export type Dir = 'up' | 'down' | 'left' | 'right';
 
@@ -48,6 +47,20 @@ export interface FloorTile {
   c: number;
 }
 
+export interface Room {
+  id: string;
+  name: string;
+  /** Canto superior esquerdo do interior e tamanho (tiles). */
+  ix: number;
+  iy: number;
+  w: number;
+  h: number;
+  /** Linha da parede de cima (onde fica a placa da sala). */
+  wallRow: number;
+  /** Agentes (ids) por mesa, em ordem. */
+  agents: string[];
+}
+
 export interface Office {
   cols: number;
   rows: number;
@@ -57,13 +70,34 @@ export interface Office {
   seats: Seat[];
   /** Tiles intransitáveis (móveis, bancos, paredes). */
   blocked: boolean[][];
-  /** Posição de cada mesa (índice = vaga de agente). */
-  desks: { col: number; row: number; seatId: string }[];
+  /** Posição de cada mesa (índice = posição em DESK_ORDER). */
+  desks: { col: number; row: number; seatId: string; room: string }[];
+  rooms: Room[];
 }
 
-const WORK_FLOOR: FloorTile = { img: 'floor_6', h: 25, s: 48, b: -43, c: -88 };
-const LOUNGE_FLOOR: FloorTile = { img: 'floor_0', h: 209, s: 39, b: -25, c: -80 };
+const f = (img: string, h: number, s: number, b: number, c: number): FloorTile => ({ img, h, s, b, c });
+const WOOD = f('floor_6', 25, 48, -43, -88);
+const WOOD_TEAL = f('floor_6', 170, 35, -45, -70);
+const WOOD_TAN = f('floor_6', 35, 30, -30, -70);
+const BLUE = f('floor_0', 209, 39, -25, -80);
+const GREEN = f('floor_0', 160, 30, -40, -70);
+const PURPLE = f('floor_0', 280, 30, -35, -75);
+const CHECKER = f('floor_8', 209, 0, -16, -8);
 export const WALL_COLOR = { h: 214, s: 30, b: -100, c: -55 };
+
+/** Salas (departamentos). Cada sala tem interior de 13 colunas: 3 mesas por fileira, 4 colunas por mesa + corredor. */
+const ROOM_DEFS: (Omit<Room, 'w' | 'h'> & { rows: number; floor: FloorTile })[] = [
+  { id: 'labs', name: 'Laboratórios de IA', ix: 1, iy: 2, rows: 2, wallRow: 1, floor: WOOD, agents: ['openai', 'anthropic', 'google', 'deepseek', 'xai', 'mistral'] },
+  { id: 'infra', name: 'Big Techs e Infraestrutura', ix: 15, iy: 2, rows: 2, wallRow: 1, floor: WOOD_TEAL, agents: ['meta', 'microsoft', 'nvidia', 'amazon'] },
+  { id: 'tech', name: 'Tecnologia e Pesquisa', ix: 29, iy: 2, rows: 2, wallRow: 1, floor: BLUE, agents: ['c-modelos', 'c-open-source', 'c-agentes', 'c-pesquisa', 'c-robotica', 'c-ferramentas'] },
+  { id: 'market', name: 'Mercado e Políticas', ix: 1, iy: 13, rows: 2, wallRow: 12, floor: WOOD_TAN, agents: ['c-negocios', 'c-startups', 'c-investimentos', 'c-legislacao', 'c-ia-no-brasil', 'geral'] },
+  { id: 'ops', name: 'Central de Operações', ix: 15, iy: 13, rows: 1, wallRow: 12, floor: GREEN, agents: ['coletor', 'editor', 'editor-chefe'] },
+  { id: 'studio', name: 'Estúdio Criativo', ix: 15, iy: 20, rows: 1, wallRow: 19, floor: PURPLE, agents: ['c-imagem', 'c-video', 'c-audio'] },
+];
+
+/** Ids dos agentes na ordem das mesas (índice = mesa). */
+export const DESK_ORDER: string[] = ROOM_DEFS.flatMap((r) => r.agents);
+export const DESK_COUNT = DESK_ORDER.length;
 
 /** Tamanho dos sprites usados: [largura, altura] em px. */
 export const SPRITE_SIZE: Record<string, [number, number]> = {
@@ -78,17 +112,50 @@ export const SPRITE_SIZE: Record<string, [number, number]> = {
 export function buildOffice(): Office {
   const floor: (FloorTile | null)[][] = Array.from({ length: ROWS }, () => Array<FloorTile | null>(COLS).fill(null));
   const wall: boolean[][] = Array.from({ length: ROWS }, () => Array<boolean>(COLS).fill(false));
-  const blocked: boolean[][] = Array.from({ length: ROWS }, () => Array<boolean>(COLS).fill(false));
   const items: Item[] = [];
   const seats: Seat[] = [];
   const desks: Office['desks'] = [];
+  const rooms: Room[] = [];
 
-  // Paredes: faixa de cima, laterais e fundo. Piso: trabalho (cima) e sala de estar (baixo).
-  for (let c = 0; c < COLS; c++) { wall[1][c] = true; wall[ROWS - 1][c] = true; }
-  for (let r = 1; r < ROWS; r++) { wall[r][0] = true; wall[r][COLS - 1] = true; }
-  for (let r = 2; r < ROWS - 1; r++) for (let c = 1; c < COLS - 1; c++) floor[r][c] = r >= 19 ? LOUNGE_FLOOR : WORK_FLOOR;
-  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (wall[r][c] || !floor[r][c]) blocked[r][c] = true;
+  // Paredes: contorno, divisórias verticais (x=14, 28) e horizontais (linhas 12 e, só no meio, 19).
+  const hWall = (r: number, c0: number, c1: number) => { for (let c = c0; c <= c1; c++) wall[r][c] = true; };
+  hWall(1, 0, COLS - 1); hWall(12, 0, COLS - 1); hWall(ROWS - 1, 0, COLS - 1); hWall(19, 14, 28);
+  for (const x of [0, 14, 28, COLS - 1]) for (let r = 1; r < ROWS; r++) wall[r][x] = true;
 
+  // Pisos por sala (sobrepõem o interior).
+  const fill = (c0: number, r0: number, c1: number, r1: number, tile: FloorTile) => {
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) floor[r][c] = tile;
+  };
+  for (const d of ROOM_DEFS) {
+    const w = 13, h = 4 * d.rows + 1;
+    fill(d.ix, d.iy, d.ix + w - 1, d.iy + h - 1, d.floor);
+    rooms.push({ id: d.id, name: d.name, ix: d.ix, iy: d.iy, w, h, wallRow: d.wallRow, agents: d.agents });
+  }
+  rooms.push({ id: 'lounge', name: 'Sala de Estar e Reunião', ix: 29, iy: 13, w: 13, h: 12, wallRow: 12, agents: [] });
+  fill(1, 22, 13, 24, WOOD_TAN); // sobra da sala "Mercado" (copa)
+  fill(29, 13, 41, 24, BLUE); // sala de estar
+  fill(30, 19, 36, 24, CHECKER); // piso xadrez da área de reunião
+
+  // Portas: abrem a parede (e o piso na faixa de cobertura) para os corredores.
+  const doorV = (x: number, rows: number[], left: FloorTile, right: FloorTile) => {
+    for (const r of rows) { wall[r][x] = false; floor[r][x] = left; floor[r][x - 1] ??= left; floor[r][x + 1] ??= right; }
+  };
+  doorV(14, [6, 10], WOOD, WOOD_TEAL);
+  doorV(28, [6, 10], WOOD_TEAL, BLUE);
+  doorV(14, [17, 24], WOOD_TAN, GREEN);
+  doorV(28, [17, 24], GREEN, BLUE);
+  const doorH = (cols: number[], wallRow: number, tile: FloorTile) => {
+    for (const c of cols) { wall[wallRow][c] = false; floor[wallRow][c] = tile; floor[wallRow - 1][c] = tile; }
+  };
+  doorH([5, 9], 12, WOOD); doorH([19, 23], 12, WOOD_TEAL); doorH([33, 37], 12, BLUE);
+  doorH([19, 23], 19, GREEN);
+  // Portas de baixo de cada sala precisam de piso na cobertura (linha acima da parede) para o fluxo contínuo.
+  for (const c of [5, 9]) floor[11][c] = WOOD;
+  for (const c of [19, 23]) floor[11][c] = WOOD_TEAL;
+  for (const c of [33, 37]) floor[11][c] = BLUE;
+  for (const c of [19, 23]) floor[18][c] = GREEN;
+
+  const blocked: boolean[][] = Array.from({ length: ROWS }, (_, r) => Array.from({ length: COLS }, (_, c) => wall[r][c] || !floor[r][c]));
   const block = (col: number, row: number, w = 1, h = 1) => {
     for (let r = row; r < row + h; r++) for (let c = col; c < col + w; c++) if (blocked[r]?.[c] !== undefined) blocked[r][c] = true;
   };
@@ -98,29 +165,40 @@ export function buildOffice(): Office {
     items.push({ key, img, x: col * TILE, y: row * TILE, w, h, zY: row * TILE + h, ...extra });
   };
 
-  // Mesas de trabalho: 7 x 4. Mesa 3x2, PC em cima, banco ao sul.
-  for (let i = 0; i < DESK_COUNT; i++) {
-    const c = 2 + 4 * (i % DESK_COLS);
-    const r = 3 + 4 * Math.floor(i / DESK_COLS);
-    put(`desk-${i}`, 'DESK_FRONT', c, r);
-    put(`pc-${i}`, 'PC_FRONT_OFF', c + 1, r, { pcOf: i, zY: (r + 2) * TILE + 1 });
-    put(`bench-${i}`, 'CUSHIONED_BENCH', c + 1, r + 2);
-    block(c, r, 3, 2);
-    block(c + 1, r + 2); // banco = assento (só o dono entra)
-    const seatId = `desk-${i}`;
-    seats.push({ id: seatId, col: c + 1, row: r + 2, dir: 'up', kind: 'desk', desk: i });
-    desks.push({ col: c, row: r, seatId });
+  // Mesas e decoração de cada sala.
+  let deskIndex = 0;
+  for (const d of ROOM_DEFS) {
+    const slots = 3 * d.rows;
+    for (let s = 0; s < slots; s++) {
+      const c = d.ix + 1 + 4 * (s % 3);
+      const r = d.iy + 1 + 4 * Math.floor(s / 3);
+      if (s < d.agents.length) {
+        const i = deskIndex++;
+        put(`desk-${i}`, 'DESK_FRONT', c, r);
+        put(`pc-${i}`, 'PC_FRONT_OFF', c + 1, r, { pcOf: i, zY: (r + 2) * TILE + 1 });
+        put(`bench-${i}`, 'CUSHIONED_BENCH', c + 1, r + 2);
+        block(c, r, 3, 2);
+        block(c + 1, r + 2);
+        const seatId = `desk-${i}`;
+        seats.push({ id: seatId, col: c + 1, row: r + 2, dir: 'up', kind: 'desk', desk: i });
+        desks.push({ col: c, row: r, seatId, room: d.id });
+      } else {
+        // vaga sem agente: cantinho com plantas
+        put(`empty-plant-${s}`, 'LARGE_PLANT', c, r);
+        block(c, r + 2, 2, 1);
+        put(`empty-bin-${s}`, 'BIN', c + 2, r + 1);
+        block(c + 2, r + 1);
+      }
+    }
+    // Decoração da parede de cima da sala (na faixa de cobertura, acima da parede).
+    const dr = d.wallRow - 1;
+    const wallZ = (d.wallRow + 1) * TILE + 0.1;
+    put(`${d.id}-shelf`, 'DOUBLE_BOOKSHELF', d.ix + 1, dr, { zY: wallZ });
+    put(`${d.id}-clock`, 'CLOCK', d.ix + 6, dr, { zY: wallZ });
+    put(`${d.id}-art`, 'LARGE_PAINTING', d.ix + 10, dr, { zY: wallZ });
   }
 
-  // Decoração da parede de cima (sobre a faixa de parede da linha 1).
-  const wallZ = 2 * TILE + 0.1;
-  const deco: [string, number][] = [
-    ['DOUBLE_BOOKSHELF', 2], ['CLOCK', 6], ['SMALL_PAINTING', 8], ['LARGE_PAINTING', 10], ['HANGING_PLANT', 13],
-    ['WHITEBOARD', 15], ['SMALL_PAINTING_2', 18], ['DOUBLE_BOOKSHELF', 20], ['LARGE_PAINTING', 23], ['HANGING_PLANT', 26],
-  ];
-  deco.forEach(([img, col], i) => put(`deco-${i}`, img, col, 0, { zY: wallZ }));
-
-  // Sala de estar: dois conjuntos de sofá + mesa de centro.
+  // Sala de estar (col. 3, parte de baixo): sofás + mesa de centro, mesa de reunião, café.
   const lounge = (col: number, row: number, tag: string) => {
     put(`${tag}-table`, 'COFFEE_TABLE', col, row);
     put(`${tag}-sofa-n`, 'SOFA_FRONT', col, row - 1);
@@ -143,37 +221,41 @@ export function buildOffice(): Office {
       { id: `${tag}-s1`, col: col + 1, row: row + 2, dir: 'up', kind: 'lounge', behind: true },
     );
   };
-  lounge(6, 21, 'loungeA');
-  lounge(21, 21, 'loungeB');
+  lounge(34, 16, 'lounge');
 
-  // Mesa de reunião com cadeiras laterais.
-  put('meeting', 'TABLE_FRONT', 13, 20);
-  block(13, 20, 3, 4);
-  [[12, 20], [12, 22]].forEach(([c, r], i) => {
+  put('meeting', 'TABLE_FRONT', 32, 20);
+  block(32, 20, 3, 4);
+  [[31, 20], [31, 22]].forEach(([c, r], i) => {
     put(`chair-l${i}`, 'WOODEN_CHAIR_SIDE', c, r);
     block(c, r + 1);
     seats.push({ id: `meet-l${i}`, col: c, row: r + 1, dir: 'right', kind: 'lounge' });
   });
-  [[16, 20], [16, 22]].forEach(([c, r], i) => {
+  [[35, 20], [35, 22]].forEach(([c, r], i) => {
     put(`chair-r${i}`, 'WOODEN_CHAIR_SIDE', c, r, { mirror: true });
     block(c, r + 1);
     seats.push({ id: `meet-r${i}`, col: c, row: r + 1, dir: 'left', kind: 'lounge' });
   });
 
-  // Cantinho do café e plantas.
-  put('coffee-table', 'SMALL_TABLE_FRONT', 26, 21);
-  put('coffee', 'COFFEE', 26, 21, { x: 26 * TILE + 8, y: 21 * TILE - 2, zY: 23 * TILE + 1 });
-  block(26, 21, 2, 2);
-  put('bin', 'BIN', 28, 23);
-  block(28, 23);
-  put('plant-a', 'LARGE_PLANT', 1, 21);
-  block(1, 23, 2, 1);
-  put('plant-b', 'PLANT_2', 28, 20);
-  block(28, 21);
-  put('plant-c', 'PLANT', 4, 19);
-  block(4, 20);
-  put('cactus', 'CACTUS', 18, 19);
-  block(18, 20);
+  put('coffee-table', 'SMALL_TABLE_FRONT', 39, 14);
+  put('coffee', 'COFFEE', 39, 14, { x: 39 * TILE + 8, y: 14 * TILE - 2, zY: 16 * TILE + 1 });
+  block(39, 14, 2, 2);
+  put('bin', 'BIN', 41, 17);
+  block(41, 17);
+  put('plant-lounge-a', 'LARGE_PLANT', 40, 22);
+  block(40, 24, 2, 1);
+  put('plant-lounge-b', 'PLANT_2', 30, 14);
+  block(30, 15);
+  put('cactus', 'CACTUS', 38, 19);
+  block(38, 20);
 
-  return { cols: COLS, rows: ROWS, floor, wall, items, seats, blocked, desks };
+  // Copa do "Mercado" (linhas extras da sala de baixo à esquerda).
+  put('copa-table', 'SMALL_TABLE_FRONT', 2, 22);
+  put('copa-coffee', 'COFFEE', 2, 22, { x: 2 * TILE + 8, y: 22 * TILE - 2, zY: 24 * TILE + 1 });
+  block(2, 22, 2, 2);
+  put('copa-bin', 'BIN', 12, 23);
+  block(12, 23);
+  put('copa-plant', 'PLANT_2', 10, 22);
+  block(10, 23);
+
+  return { cols: COLS, rows: ROWS, floor, wall, items, seats, blocked, desks, rooms };
 }

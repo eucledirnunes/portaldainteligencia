@@ -76,13 +76,13 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
   const agentsRef = useRef(agents);
   agentsRef.current = agents;
 
-  // Escala inteira quando cabe (pixels nítidos); senão reduz proporcionalmente.
+  // Ocupa a largura disponível (até 3x), com pixels nítidos (image-rendering: pixelated).
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
       const avail = el.clientWidth;
-      setBoxW(avail >= W ? Math.floor(avail / W) * W : avail);
+      setBoxW(Math.min(avail, W * 3));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -101,7 +101,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
           Promise.all(names.map((n) => loadImage(`/office/furniture/${n}.png`))),
           Promise.all([0, 1, 2, 3, 4, 5].map((i) => loadImage(`/agents/char_${i}.png`))),
           loadImage('/office/walls/wall_0.png'),
-          Promise.all(['floor_0', 'floor_6'].map((n) => loadImage(`/office/floors/${n}.png`))),
+          Promise.all(['floor_0', 'floor_6', 'floor_8'].map((n) => loadImage(`/office/floors/${n}.png`))),
         ]);
         if (cancelled) return;
         const furniture = new Map(names.map((n, i) => [n, furn[i]]));
@@ -109,7 +109,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
         for (const f of office.floor.flat()) {
           if (!f) continue;
           const key = `${f.img}|${f.h}|${f.s}|${f.b}|${f.c}`;
-          if (!floorTiles.has(key)) floorTiles.set(key, colorize(floorImgs[f.img === 'floor_0' ? 0 : 1], f));
+          if (!floorTiles.has(key)) floorTiles.set(key, colorize(floorImgs[['floor_0', 'floor_6', 'floor_8'].indexOf(f.img)], f));
         }
         const wallSheet = colorize(wallImg, WALL_COLOR);
 
@@ -139,6 +139,18 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
         }
 
         const free = walkableTiles(office);
+        // Quem está "de folga" circula sobretudo pela própria sala (departamento); às vezes vai passear pelo prédio.
+        const roomOfSeat = (col: number, row: number) => office.rooms.find((r) => col >= r.ix && col < r.ix + r.w && row >= r.iy && row < r.iy + r.h)?.id;
+        const freeByRoom = new Map<string, { col: number; row: number }[]>();
+        for (const t of free) {
+          const id = roomOfSeat(t.col, t.row);
+          if (id) freeByRoom.set(id, [...(freeByRoom.get(id) ?? []), t]);
+        }
+        const pick = (ch: { homeSeat: { col: number; row: number } }) => {
+          const own = freeByRoom.get(roomOfSeat(ch.homeSeat.col, ch.homeSeat.row) ?? '');
+          const list = own && Math.random() < 0.75 ? own : free;
+          return list[Math.floor(Math.random() * list.length)];
+        };
         const occupied = new Set<string>();
         const seatById = new Map(office.seats.map((s) => [s.id, s]));
         const charsById = new Map<string, Char>();
@@ -147,7 +159,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
           const home = office.seats.find((s) => s.desk === a.desk);
           if (!home) continue;
           deskAgent.set(a.desk, a);
-          charsById.set(a.id, createChar(office, a.id, a.sprite, a.mood, home, free));
+          charsById.set(a.id, createChar(office, a.id, a.sprite, a.mood, home, pick));
           occupied.add(home.id);
         }
         void seatById;
@@ -167,7 +179,7 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
           const dt = Math.min(0.1, (now - last) / 1000);
           last = now;
           if (!visible) return;
-          if (!reduce) for (const ch of charsById.values()) stepChar(ch, dt, office, free, occupied);
+          if (!reduce) for (const ch of charsById.values()) stepChar(ch, dt, office, pick, occupied);
 
           ctx.clearRect(0, 0, W, H);
           ctx.drawImage(bg, 0, 0);
@@ -253,6 +265,15 @@ export function OfficeCanvas({ agents, selected, onSelect }: { agents: OfficeAge
         />
         {!ready && !failed && <p className="absolute inset-0 grid place-items-center font-mono text-xs text-slate-400">Abrindo a redação…</p>}
         {failed && <p className="absolute inset-0 grid place-items-center px-6 text-center text-xs text-slate-300">Não foi possível carregar o escritório. Veja a lista de agentes abaixo.</p>}
+        {office.rooms.map((r) => (
+          <span
+            key={r.id}
+            style={{ left: pct((r.ix + r.w / 2) * TILE, W), top: pct(r.wallRow * TILE - 6, H), transform: 'translate(-50%, -50%)', fontSize: `${Math.max(7, boxW / W * 5.5)}px` }}
+            className="pointer-events-none absolute whitespace-nowrap rounded-sm bg-ok px-1.5 py-px font-mono font-bold uppercase tracking-wider text-navy"
+          >
+            {r.name}
+          </span>
+        ))}
         {ready && agents.map((a) => {
           const d = office.desks[a.desk];
           if (!d) return null;

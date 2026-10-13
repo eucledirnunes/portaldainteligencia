@@ -93,9 +93,11 @@ export function walkableTiles(o: Office): { col: number; row: number }[] {
   return out;
 }
 
-export function createChar(o: Office, id: string, sprite: number, mood: Mood, homeSeat: Seat, free: { col: number; row: number }[]): Char {
+export type Pick = (ch: { homeSeat: Seat }) => { col: number; row: number };
+
+export function createChar(o: Office, id: string, sprite: number, mood: Mood, homeSeat: Seat, pick: Pick): Char {
   const seated = mood !== 'idle';
-  const spot = seated ? { col: homeSeat.col, row: homeSeat.row } : free[Math.floor(Math.random() * free.length)];
+  const spot = seated ? { col: homeSeat.col, row: homeSeat.row } : pick({ homeSeat });
   return {
     id, sprite, mood, x: centerX(spot.col), y: centerY(spot.row), col: spot.col, row: spot.row,
     dir: seated ? homeSeat.dir : 'down', pose: seated ? (mood === 'active' ? 'type' : 'nap') : 'stand',
@@ -110,7 +112,7 @@ function goTo(ch: Char, o: Office, col: number, row: number) {
 }
 
 /** Avança a simulação em dt segundos. `occupied` = ids de assentos em uso por outros. */
-export function stepChar(ch: Char, dt: number, o: Office, free: { col: number; row: number }[], occupied: Set<string>) {
+export function stepChar(ch: Char, dt: number, o: Office, pick: Pick, occupied: Set<string>) {
   ch.frameT += dt;
 
   // Mudou para 'active'/'sleep' enquanto circulava: volta para a mesa.
@@ -190,7 +192,7 @@ export function stepChar(ch: Char, dt: number, o: Office, free: { col: number; r
       return;
     }
   }
-  const t = free[Math.floor(Math.random() * free.length)];
+  const t = pick(ch);
   ch.laps++;
   goTo(ch, o, t.col, t.row);
   if (!ch.path.length) ch.timer = rand(2, 6);
