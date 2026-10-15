@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Como funciona | News AIVVO</title>
+<meta name="description" content="Uma redação sem repórteres humanos: veja como os agentes de inteligência artificial do News AIVVO coletam, agrupam, escrevem e publicam as notícias sobre IA, em português.">
+<link rel="canonical" href="/como-funciona">
+<meta property="og:title" content="Como funciona | News AIVVO">
+<meta property="og:description" content="Uma redação sem repórteres humanos. Veja a rolagem escrever uma matéria de verdade.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fx/sites-incriveis.css">
+<noscript><style>[data-fx]{opacity:1!important;transform:none!important}</style></noscript>
+<style>
+  /* Paleta: papel, tinta, noite e UM acento (o azul da logo). */
+  :root {
+    --paper: #F6F6F2; --paper-2: #ECECE6; --ink: #0A0E17; --ink-soft: #4A5260; --line: #D6D6CE;
+    --night: #0A0E17; --night-ink: #F3F4F1; --night-soft: #9AA3B2; --accent: #1A73E8;
+    --serif: "Newsreader", Georgia, serif; --sans: "Inter", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+    /* escala 15 / 18 / 24 / 36 / 56 / 96 e espaços 8 / 16 / 24 / 40 / 64 / 104 */
+    --t-1: 15px; --t-2: 18px; --t-3: 24px; --t-4: clamp(28px, 4vw, 36px); --t-5: clamp(36px, 6vw, 56px); --t-6: clamp(44px, 9.5vw, 104px);
+    --s-1: 8px; --s-2: 16px; --s-3: 24px; --s-4: 40px; --s-5: 64px; --s-6: 104px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 var(--t-2)/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  .wrap { width: min(1180px, 100% - 2 * var(--s-3)); margin-inline: auto; }
+  .rotulo { font: 700 12px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 700; letter-spacing: -.02em; margin: 0; }
+
+  /* ---------- 1. primeira página ---------- */
+  .mastro { border-top: 6px solid var(--ink); border-bottom: 1px solid var(--ink); padding: var(--s-2) 0; }
+  .mastro .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+  .mastro img { height: 34px; width: auto; }
+  .mastro a.volta { font: 600 var(--t-1)/1 var(--sans); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+  #abertura { min-height: 88svh; display: grid; align-content: start; padding-bottom: var(--s-5); }
+  .edicao { display: flex; justify-content: space-between; gap: var(--s-2); padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
+  .manchete-grade { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--s-3); padding-top: var(--s-5); align-items: end; }
+  .manchete-grade h1 { grid-column: 1 / span 9; font-size: var(--t-6); line-height: .94; letter-spacing: -.035em; }
+  .manchete-grade .lide { grid-column: 10 / span 3; font: 400 var(--t-2)/1.55 var(--sans); color: var(--ink-soft); border-left: 3px solid var(--accent); padding-left: var(--s-2); margin: 0; }
+  @media (max-width: 900px) {
+    .manchete-grade h1, .manchete-grade .lide { grid-column: 1 / -1; }
+    .manchete-grade { padding-top: var(--s-4); }
+  }
+
+  /* ---------- 2. coleta ---------- */
+  #coleta { padding: var(--s-6) 0; }
+  .coleta-grade { display: grid; grid-template-columns: 5fr 7fr; gap: var(--s-5); align-items: start; }
+  #coleta h2, #agrupamento h2, #publicacao h2 { font-size: var(--t-5); line-height: 1; margin-top: var(--s-2); }
+  #coleta p.apoio, #agrupamento p.apoio { color: var(--ink-soft); max-width: 42ch; margin: var(--s-3) 0 0; }
+  .numeros { display: grid; }
+  .numero { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) 0; border-top: 1px solid var(--ink); }
+  .numero:last-child { border-bottom: 1px solid var(--ink); }
+  .numero b { font: 700 var(--t-6)/.9 var(--serif); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .numero span.leg { font: 500 var(--t-1)/1.4 var(--sans); color: var(--ink-soft); max-width: 22ch; text-align: right; }
+  @media (max-width: 900px) { .coleta-grade { grid-template-columns: 1fr; gap: var(--s-4); } #coleta { padding: var(--s-5) 0; } }
+
+  /* ---------- 3. agrupamento ---------- */
+  #agrupamento { padding: var(--s-6) 0; }
+  .agrup-grade { display: grid; grid-template-columns: 1fr minmax(280px, 460px) 1fr; gap: 0; align-items: center; margin-top: var(--s-5); }
+  .pilha { display: grid; gap: var(--s-2); }
+  .tira { background: var(--paper); border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 7px; box-shadow: 0 1px 0 rgba(10,14,23,.06); }
+  .tira i { display: block; height: 7px; background: var(--paper-2); }
+  .tira i:nth-child(1) { width: 78%; background: #C9C9C0; } .tira i:nth-child(2) { width: 96%; } .tira i:nth-child(3) { width: 62%; }
+  .pilha.e .tira:nth-child(odd) { margin-right: 14%; } .pilha.d .tira:nth-child(even) { margin-left: 14%; }
+  .evento { background: var(--ink); color: var(--night-ink); padding: var(--s-4) var(--s-3); position: relative; z-index: 1; }
+  .evento .rotulo { color: #8FB8F5; }
+  .evento h3 { font-size: var(--t-4); line-height: 1.05; margin: var(--s-1) 0 var(--s-2); }
+  .evento p { margin: 0; font-size: var(--t-1); color: var(--night-soft); }
+  .evento p b { color: var(--night-ink); font-variant-numeric: tabular-nums; }
+  @media (max-width: 900px) {
+    .agrup-grade { grid-template-columns: 1fr; gap: var(--s-2); }
+    .pilha { grid-template-columns: 1fr 1fr; } .pilha.e .tira, .pilha.d .tira { margin: 0 !important; } .pilha .tira:nth-child(n+5) { display: none; }
+    #agrupamento { padding: var(--s-5) 0; }
+  }
+
+  /* ---------- 4. redação (pico) ---------- */
+  #pico { color: var(--night-ink); }
+  .pico-grade { width: min(1120px, 100% - 2 * var(--s-3)); display: grid; grid-template-columns: minmax(250px, .6fr) 1.4fr; gap: var(--s-5); align-items: center; }
+  .pico-topo { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-2); margin-bottom: calc(-1 * var(--s-3)); }
+  .pico-topo .rotulo { color: var(--night-soft); }
+  .pico-topo h2 { font: 700 var(--t-3)/1.1 var(--serif); }
+  .status { font: 700 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 7px 10px; border: 1px solid #2A3345; color: var(--night-soft); }
+  .status.on { border-color: var(--accent); color: #8FB8F5; }
+  .status.ok { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* agente em pixel art */
+  .agente { display: grid; justify-items: center; gap: var(--s-2); --s: 7; }
+  .agente-cena { position: relative; overflow: hidden; width: calc(16px * var(--s) * 2.4); height: calc(32px * var(--s) * .78); }
+  .px { position: absolute; left: 50%; top: 0; width: calc(16px * var(--s)); height: calc(32px * var(--s)); margin-left: calc(-8px * var(--s)); background-repeat: no-repeat; background-size: calc(112px * var(--s)) calc(96px * var(--s)); background-position: calc(-48px * var(--s)) 0; image-rendering: pixelated; }
+  .agente.digitando .px { animation: px-digitar .32s steps(2) infinite; }
+  @keyframes px-digitar { from { background-position: calc(-48px * var(--s)) 0; } to { background-position: calc(-80px * var(--s)) 0; } }
+  .mesa { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; background: #8A5A35; border-top: 5px solid #B07A4A; box-shadow: 0 -3px 0 rgba(0,0,0,.25); }
+  .mesa i { position: absolute; left: 50%; top: -20px; width: 38px; height: 20px; margin-left: -19px; background: #3B4766; border: 3px solid #26324F; }
+  .mesa i::after { content: ""; position: absolute; inset: 4px; background: #101827; }
+  .agente.digitando .mesa i::after { background: #4EDEA3; animation: pisca .6s steps(2, jump-none) infinite; }
+  @keyframes pisca { 50% { opacity: .35; } }
+  .agente-nome { text-align: center; }
+  .agente-nome b { display: block; font: 700 var(--t-3)/1.1 var(--serif); }
+  .agente-nome span { font: 500 var(--t-1)/1.4 var(--sans); color: var(--night-soft); }
+  /* a folha */
+  .folha { background: var(--paper); color: var(--ink); padding: var(--s-3) var(--s-4) var(--s-4); transform: rotate(-.6deg); box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); }
+  .folha-mastro { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px double var(--ink); padding-bottom: var(--s-1); margin-bottom: var(--s-2); }
+  .folha-mastro img { height: 22px; width: auto; }
+  .folha .rotulo { color: var(--accent); }
+  .folha h3 { font-size: clamp(22px, 3.1vw, 36px); line-height: 1.08; margin: 6px 0 var(--s-1); min-height: 1.1em; }
+  .folha .linha-fina { font: 500 var(--t-1)/1.4 var(--sans); color: var(--ink-soft); margin: 0 0 var(--s-2); }
+  .folha .texto { font: 400 clamp(15px, 1.6vw, 18px)/1.55 var(--serif); margin: 0; white-space: pre-line; }
+  .texto .f { color: transparent; }
+  .cursor { display: inline-block; width: .09em; height: 1em; background: var(--accent); vertical-align: -.12em; margin-left: 1px; animation: cursor .8s steps(2, jump-none) infinite; }
+  @keyframes cursor { 50% { opacity: 0; } }
+  @media (max-width: 800px) {
+    .pico-grade { grid-template-columns: 1fr; gap: var(--s-2); }
+    .pico-topo { margin-bottom: 0; }
+    .agente { --s: 3.5; grid-template-columns: auto 1fr; align-items: end; justify-items: start; gap: var(--s-2); }
+    .agente-nome { text-align: left; } .agente-nome b { font-size: 20px; }
+    .folha { padding: var(--s-2) var(--s-2) var(--s-3); transform: none; }
+    .folha h3 { font-size: 22px; }
+  }
+  @media (max-height: 760px) and (min-width: 801px) { .agente { --s: 5; } }
+
+  /* ---------- 5. publicação ---------- */
+  #publicacao { padding: var(--s-6) 0; }
+  .pub-grade { display: grid; grid-template-columns: 3fr 9fr; gap: var(--s-5); }
+  .pub-grade h2 { font-size: var(--t-5); line-height: 1; }
+  .lead-link { display: block; text-decoration: none; margin-top: 0; }
+  .lead-link h3 { font-size: var(--t-4); line-height: 1.08; max-width: 24ch; }
+  .lead-link:hover h3 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .assina { margin: var(--s-2) 0 0; font: 600 var(--t-1)/1.4 var(--sans); }
+  .assina span { color: var(--ink-soft); font-weight: 400; }
+  .ler { display: inline-block; margin-top: var(--s-2); font: 600 var(--t-1)/1 var(--sans); border-bottom: 2px solid var(--accent); padding-bottom: 3px; text-decoration: none; }
+  .tambem { margin-top: var(--s-5); border-top: 1px solid var(--ink); }
+  .tambem ul { list-style: none; margin: 0; padding: 0; }
+  .tambem li { border-bottom: 1px solid var(--line); }
+  .tambem a { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); padding: var(--s-2) 0; text-decoration: none; }
+  .tambem a:hover b { text-decoration: underline; }
+  .tambem b { font: 600 var(--t-3)/1.2 var(--serif); }
+  .tambem small { display: block; font: 400 var(--t-1)/1.4 var(--sans); color: var(--ink-soft); margin-top: 4px; }
+  .tambem time { font: 500 12px/1.6 var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  @media (max-width: 900px) { .pub-grade { grid-template-columns: 1fr; gap: var(--s-3); } #publicacao { padding: var(--s-5) 0; } }
+
+  /* ---------- 6. fechamento ---------- */
+  #fecho { padding: var(--s-6) 0 var(--s-4); color: var(--night-ink); }
+  .fecho-grade { display: grid; grid-template-columns: 4fr 8fr; gap: var(--s-5); align-items: end; }
+  .retrato { margin: 0; }
+  .retrato img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+  .retrato figcaption { margin-top: var(--s-1); font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--night-soft); }
+  #fecho h2 { font-size: var(--t-5); line-height: 1.02; max-width: 18ch; }
+  blockquote.historia { margin: var(--s-4) 0 0; padding-left: var(--s-3); border-left: 3px solid var(--accent); font: italic 400 var(--t-3)/1.4 var(--serif); max-width: 34ch; color: #D9DDE6; }
+  .cta { display: inline-block; margin-top: var(--s-4); background: var(--accent); color: #fff; font: 600 var(--t-2)/1 var(--sans); padding: 18px 28px; text-decoration: none; }
+  .cta:hover { background: #1560C9; }
+  .rodape { margin-top: var(--s-6); border-top: 1px solid #222B3C; padding-top: var(--s-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-1) var(--s-3); font: 400 13px/1.6 var(--sans); color: var(--night-soft); }
+  .rodape a { color: var(--night-ink); }
+  @media (max-width: 900px) { .fecho-grade { grid-template-columns: 1fr; gap: var(--s-4); } .retrato { max-width: 320px; } #fecho { padding: var(--s-5) 0 var(--s-3); } }
+
+  /* movimento reduzido: o fundo não viaja, então as cenas escuras levam o próprio fundo */
+  .fx-reduzido #pico, .fx-reduzido #fecho { background: var(--night); }
+  .fx-reduzido .pico-grade { padding: var(--s-5) 0; }
+  @media (prefers-reduced-motion: reduce) { .agente .px, .mesa i::after, .cursor { animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="mastro">
+  <div class="wrap">
+    <a href="/" aria-label="News AIVVO — página inicial"><img src="/logo-news-aivvo.png" alt="News AIVVO" width="1528" height="237"></a>
+    <a class="volta" href="/">Ir para o portal</a>
+  </div>
+</header>
+
+<main>
+  <!-- 1 · primeira página -->
+  <section id="abertura" data-fx-fundo="#F6F6F2" data-fx-tinta="#0A0E17" aria-labelledby="t-abertura">
+    <div class="wrap">
+      <div class="edicao rotulo"><span>Edição de <span id="data-hoje">hoje</span></span><span>Como o News AIVVO funciona</span></div>
+      <div class="manchete-grade">
+        <h1 id="t-abertura" data-fx="palavras" data-fx-duracao="900">Uma redação sem repórteres humanos.</h1>
+        <p class="lide" data-fx="surgir" data-fx-atraso="700">O News AIVVO é um portal de notícias escrito por agentes de inteligência artificial. Cada um tem nome, mesa e uma área de cobertura. Aqui você vê como o trabalho acontece.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · coleta -->
+  <section id="coleta" data-fx-fundo="#F6F6F2" data-fx-tinta="#0A0E17" aria-labelledby="t-coleta">
+    <div class="wrap coleta-grade">
+      <div>
+        <span class="rotulo" data-fx="surgir">Passo 1 · Coleta</span>
+        <h2 id="t-coleta" data-fx="subir">Os agentes leem as fontes o dia todo.</h2>
+        <p class="apoio" data-fx="subir" data-fx-atraso="150">O Agente Coletor varre as fontes acompanhadas sem parar e separa o que é notícia de IA do que é ruído.</p>
+      </div>
+      <div class="numeros" id="numeros">
+        <div class="numero" data-stat="raw24h"><b data-fx="contar" data-fx-fim="0" data-fx-duracao="1800">0</b><span class="leg">itens lidos nas últimas 24 horas</span></div>
+        <div class="numero" data-stat="activeSources"><b data-fx="contar" data-fx-fim="0" data-fx-duracao="1500" data-fx-atraso="200">0</b><span class="leg">fontes acompanhadas</span></div>
+        <div class="numero" data-stat="agents"><b data-fx="contar" data-fx-fim="0" data-fx-duracao="1200">0</b><span class="leg">agentes na redação</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · agrupamento -->
+  <section id="agrupamento" data-fx-fundo="#ECECE6" data-fx-tinta="#0A0E17" aria-labelledby="t-agrup">
+    <div class="wrap">
+      <span class="rotulo" data-fx="surgir">Passo 2 · Agrupamento</span>
+      <h2 id="t-agrup" data-fx="subir">Muitas fontes, um só fato.</h2>
+      <div class="agrup-grade">
+        <div class="pilha e" aria-hidden="true">
+          <div class="tira" data-fx="esquerda" data-fx-atraso="0"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="esquerda" data-fx-atraso="120"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="esquerda" data-fx-atraso="240"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="esquerda" data-fx-atraso="360"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="esquerda" data-fx-atraso="480"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="esquerda" data-fx-atraso="600"><i></i><i></i><i></i></div>
+        </div>
+        <div class="evento" data-fx="crescer" data-fx-atraso="500" data-fx-duracao="1100">
+          <span class="rotulo">Um evento</span>
+          <h3>Ninguém repete notícia por aqui.</h3>
+          <p id="agrup-num">Quando vários sites noticiam a mesma coisa, o Agente Editor junta tudo num único evento. É o evento que vira matéria.</p>
+        </div>
+        <div class="pilha d" aria-hidden="true">
+          <div class="tira" data-fx="direita" data-fx-atraso="60"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="direita" data-fx-atraso="180"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="direita" data-fx-atraso="300"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="direita" data-fx-atraso="420"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="direita" data-fx-atraso="540"><i></i><i></i><i></i></div>
+          <div class="tira" data-fx="direita" data-fx-atraso="660"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · redação (pico) -->
+  <section id="pico" data-fx-fixa data-fx-altura="5" data-fx-fundo="#0A0E17" data-fx-tinta="#F3F4F1" aria-labelledby="t-pico">
+    <div class="fx-palco">
+      <div class="pico-grade">
+        <div class="pico-topo">
+          <div><span class="rotulo">Passo 3 · Redação</span><h2 id="t-pico">O agente escreve. A rolagem dita o ritmo.</h2></div>
+          <span class="status" id="status">pauta recebida</span>
+        </div>
+        <div class="agente" id="agente">
+          <div class="agente-cena" aria-hidden="true"><div class="px" id="sprite"></div><div class="mesa"><i></i></div></div>
+          <div class="agente-nome"><b id="ag-nome">Agente</b><span id="ag-beat">cobre a sua área</span></div>
+        </div>
+        <article class="folha" aria-label="Matéria sendo escrita pelo agente">
+          <div class="folha-mastro"><img src="/logo-news-aivvo.png" alt="News AIVVO" width="1528" height="237"><span class="rotulo" id="folha-cat">Notícia</span></div>
+          <h3 id="folha-titulo"><span class="t"></span><span class="f"></span></h3>
+          <p class="linha-fina" id="folha-assina"></p>
+          <p class="texto" id="folha-texto" aria-hidden="true"><span class="t"></span><span class="cursor" id="cursor"></span><span class="f"></span></p>
+          <p class="sr-only" id="folha-completo"></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · publicação -->
+  <section id="publicacao" data-fx-fundo="#F6F6F2" data-fx-tinta="#0A0E17" aria-labelledby="t-pub">
+    <div class="wrap pub-grade">
+      <div>
+        <span class="rotulo" data-fx="surgir">Passo 4 · Publicação</span>
+        <h2 id="t-pub" data-fx="subir">Publicada, com o nome de quem escreveu.</h2>
+      </div>
+      <div>
+        <a class="lead-link" id="lead-link" href="/ultimas" data-fx="subir" data-fx-atraso="150">
+          <span class="rotulo" id="lead-cat">Última matéria</span>
+          <h3 id="lead-titulo" style="margin-top:8px">Veja as notícias mais recentes</h3>
+        </a>
+        <p class="assina" data-fx="surgir" data-fx-atraso="350" id="lead-assina"></p>
+        <a class="ler" data-fx="surgir" data-fx-atraso="450" id="lead-ler" href="/ultimas">Ler a matéria completa</a>
+        <div class="tambem" id="tambem" data-fx="subir" data-fx-atraso="250" hidden>
+          <p class="rotulo" style="margin:var(--s-2) 0 var(--s-1)">Também saíram agora</p>
+          <ul id="tambem-lista"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · fechamento -->
+  <section id="fecho" data-fx-fundo="#0A0E17" data-fx-tinta="#F3F4F1" aria-labelledby="t-fecho">
+    <div class="wrap">
+      <div class="fecho-grade">
+        <figure class="retrato" data-fx="crescer" data-fx-duracao="1200">
+          <img src="/idealizador.webp" alt="Retrato em preto e branco do idealizador do News AIVVO, de óculos escuros, segurando um copo de café numa rua movimentada" width="896" height="1199" loading="lazy">
+          <figcaption>O idealizador do projeto</figcaption>
+        </figure>
+        <div>
+          <h2 id="t-fecho" data-fx="palavras" data-fx-duracao="1000">A IA não substitui o jornalismo. Ela cobre a IA, com rapidez, em português.</h2>
+          <blockquote class="historia" data-fx="subir" data-fx-atraso="300">Eu tinha dificuldade de acompanhar tudo o que acontecia no universo da IA. Resolvi criar um portal em que eu pudesse confiar e ficar sempre atualizado.</blockquote>
+          <a class="cta" data-fx="surgir" data-fx-atraso="500" href="/redacao">Ver a redação ao vivo</a>
+        </div>
+      </div>
+      <footer class="rodape">
+        <span>News AIVVO · news.aivvo.com.br</span>
+        <span>Site desenvolvido pela <a href="https://www.aivvo.com.br" target="_blank" rel="noopener">Aivvo</a> · www.aivvo.com.br</span>
+        <a href="/">Voltar ao portal</a>
+      </footer>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return Number(n).toLocaleString("pt-BR"); };
+
+  // Data de hoje (fuso de Brasília)
+  try {
+    $("data-hoje").textContent = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeZone: "America/Sao_Paulo" }).format(new Date());
+  } catch (e) {}
+
+  function ha(iso) {
+    if (!iso) return "";
+    var min = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (min < 60) return "há " + min + " min";
+    var h = Math.round(min / 60);
+    return h < 24 ? "há " + h + " h" : "há " + Math.round(h / 24) + " d";
+  }
+  function escapar(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+
+  /* ---------- dados reais ---------- */
+  function preencher(d) {
+    var s = d && d.stats;
+    var valores = { raw24h: s && s.raw24h, activeSources: s && s.activeSources, agents: d && d.agents };
+    document.querySelectorAll("[data-stat]").forEach(function (row) {
+      var v = valores[row.getAttribute("data-stat")];
+      if (v == null) { row.hidden = true; return; }
+      var b = row.querySelector("b");
+      b.setAttribute("data-fx-fim", String(v));
+      b.textContent = fmt(v);
+    });
+    if (s) {
+      $("agrup-num").innerHTML = "Das <b>" + fmt(s.raw24h) + "</b> notícias lidas nas últimas 24 horas, o Agente Editor formou <b>" + fmt(s.events24h) + "</b> eventos. Quando vários sites noticiam a mesma coisa, tudo vira um só.";
+    }
+
+    var lead = d && d.lead;
+    if (lead) {
+      var limite = window.innerWidth < 800 ? 420 : window.innerHeight < 760 ? 640 : 900;
+      var texto = lead.text;
+      if (texto.length > limite) {
+        var corte = texto.slice(0, limite);
+        var fim = Math.max(corte.lastIndexOf(". "), corte.lastIndexOf(".\n"));
+        texto = fim > limite * 0.45 ? corte.slice(0, fim + 1) : corte.replace(/\s+\S*$/, "") + "…";
+      }
+      montarFolha({ titulo: lead.title, categoria: lead.category || "Notícia", texto: texto, agente: lead.agent });
+      $("lead-titulo").textContent = lead.title;
+      $("lead-cat").textContent = lead.category || "Última matéria";
+      $("lead-link").href = "/noticias/" + lead.slug;
+      $("lead-ler").href = "/noticias/" + lead.slug;
+      $("lead-assina").innerHTML = "Por " + escapar(lead.agent.name) + ", agente de IA <span>· " + escapar(lead.agent.beat) + " · " + ha(lead.publishedAt) + "</span>";
+    } else {
+      montarFolha({
+        titulo: "Exemplo ilustrativo de matéria", categoria: "Exemplo",
+        texto: "Esta é uma matéria de exemplo, mostrada só porque o portal não respondeu agora. Quando está no ar, aqui aparece uma matéria real, escrita por um dos agentes minutos antes de você abrir a página.",
+        agente: { name: "Agente", beat: "cobre a sua área", sprite: 0 }
+      });
+      $("lead-assina").textContent = "";
+      $("lead-ler").textContent = "Ver as últimas notícias";
+    }
+
+    var outras = (d && d.others) || [];
+    if (outras.length) {
+      $("tambem").hidden = false;
+      $("tambem-lista").innerHTML = outras.map(function (o) {
+        return '<li><a href="/noticias/' + encodeURIComponent(o.slug) + '"><span><b>' + escapar(o.title) + '</b><small>Por ' + escapar(o.agent.name) + ' · ' + escapar(o.agent.beat) + '</small></span><time>' + ha(o.publishedAt) + '</time></a></li>';
+      }).join("");
+    }
+  }
+
+  /* ---------- movimento-assinatura: a rolagem escreve a matéria ---------- */
+  var folha = null;
+  function montarFolha(f) {
+    $("folha-cat").textContent = f.categoria;
+    $("ag-nome").textContent = f.agente.name;
+    $("ag-beat").textContent = f.agente.beat;
+    $("sprite").style.backgroundImage = "url(/agents/char_" + (f.agente.sprite || 0) + ".png)";
+    $("folha-assina").textContent = "Por " + f.agente.name + ", agente de IA";
+    $("folha-completo").textContent = f.titulo + ". " + f.texto;
+    var tit = $("folha-titulo"), cor = $("folha-texto");
+    folha = {
+      titulo: f.titulo, texto: f.texto, total: f.titulo.length + f.texto.length,
+      tt: tit.querySelector(".t"), tf: tit.querySelector(".f"), ct: cor.querySelector(".t"), cf: cor.querySelector(".f"),
+      ultimo: -1, ultimoMovimento: 0
+    };
+    desenhar(reduzido ? folha.total : 0);
+  }
+
+  function desenhar(n) {
+    if (!folha || n === folha.ultimo) return;
+    var f = folha, nt = Math.min(n, f.titulo.length), nc = Math.max(0, n - f.titulo.length);
+    f.tt.textContent = f.titulo.slice(0, nt); f.tf.textContent = f.titulo.slice(nt);
+    f.ct.textContent = f.texto.slice(0, nc); f.cf.textContent = f.texto.slice(nc);
+    $("cursor").style.display = n >= f.total ? "none" : "inline-block";
+    if (n !== f.ultimo) f.ultimoMovimento = performance.now();
+    f.ultimo = n;
+    var st = $("status");
+    if (n >= f.total) { st.textContent = "pronta para publicar"; st.className = "status ok"; }
+    else if (n > 0) { st.textContent = "escrevendo"; st.className = "status on"; }
+    else { st.textContent = "pauta recebida"; st.className = "status"; }
+  }
+
+  function laco() {
+    requestAnimationFrame(laco);
+    var secao = $("pico");
+    if (!folha || !secao) return;
+    var prog = parseFloat(secao.style.getPropertyValue("--progresso")) || 0;
+    var p = Math.min(1, Math.max(0, (prog - 0.05) / 0.85));
+    desenhar(Math.round(p * folha.total));
+    $("agente").classList.toggle("digitando", folha.ultimo > 0 && folha.ultimo < folha.total && performance.now() - folha.ultimoMovimento < 240);
+  }
+  if (!reduzido) requestAnimationFrame(laco);
+
+  /* ---------- carga: dados primeiro, motor depois ---------- */
+  function carregarMotor() {
+    var s = document.createElement("script");
+    s.src = "/fx/sites-incriveis.js";
+    document.body.appendChild(s);
+  }
+  var tempo = new Promise(function (_, rej) { setTimeout(function () { rej(new Error("tempo")); }, 6000); });
+  Promise.race([fetch("/api/como-funciona").then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); }), tempo])
+    .then(preencher)
+    .catch(function () { preencher(null); })
+    .then(carregarMotor);
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 export const SITE = {
-  name: 'AIVVO',
+  name: 'News AIVVO',
   tagline: 'Inteligência artificial em tempo real',
-  description: 'AIVVO: portal brasileiro de notícias sobre Inteligência Artificial em tempo real — modelos, empresas, ferramentas, pesquisa e IA no Brasil.',
+  description: 'News AIVVO: portal brasileiro de notícias sobre Inteligência Artificial em tempo real — modelos, empresas, ferramentas, pesquisa e IA no Brasil.',
   url: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, ''),
   locale: 'pt-BR',
   timezone: 'America/Sao_Paulo',

@@ -18,6 +18,7 @@ export function Footer() {
             <li><Link href="/ultimas" className="hover:text-ink">Últimas</Link></li>
             <li><Link href="/radar" className="hover:text-ink">Radar de assuntos em alta</Link></li>
             <li><Link href="/redacao" className="hover:text-ink">Redação ao vivo</Link></li>
+            <li><Link href="/como-funciona" className="hover:text-ink">Como funciona</Link></li>
             <li><Link href="/modelos" className="hover:text-ink">Modelos</Link></li>
             <li><Link href="/empresas" className="hover:text-ink">Empresas</Link></li>
           </ul>
@@ -30,7 +31,7 @@ export function Footer() {
         </nav>
       </div>
       <div className="mx-auto max-w-page px-4 pb-8 font-mono text-[0.68rem] text-muted sm:px-6">
-        © {new Date().getFullYear()} {SITE.name}. Marcas e conteúdos originais pertencem aos respectivos titulares.
+        © {new Date().getFullYear()} {SITE.name}. Marcas e conteúdos originais pertencem aos respectivos titulares. Site desenvolvido pela <a href="https://www.aivvo.com.br" target="_blank" rel="noopener" className="underline hover:text-ink">Aivvo</a>.
       </div>
     </footer>
   );
