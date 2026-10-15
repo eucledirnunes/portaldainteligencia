@@ -27,6 +27,7 @@
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: auto; }
+  html, body { overflow-x: clip; }
   body { margin: 0; background: var(--paper); color: var(--ink); font: 400 var(--t-2)/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
   a { color: inherit; }
   img { max-width: 100%; display: block; }
@@ -63,7 +64,7 @@
   @media (max-width: 900px) { .coleta-grade { grid-template-columns: 1fr; gap: var(--s-4); } #coleta { padding: var(--s-5) 0; } }
 
   /* ---------- 3. agrupamento ---------- */
-  #agrupamento { padding: var(--s-6) 0; }
+  #agrupamento { padding: var(--s-6) 0; overflow-x: clip; } /* as tiras entram de fora da tela */
   .agrup-grade { display: grid; grid-template-columns: 1fr minmax(280px, 460px) 1fr; gap: 0; align-items: center; margin-top: var(--s-5); }
   .pilha { display: grid; gap: var(--s-2); }
   .tira { background: var(--paper); border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 7px; box-shadow: 0 1px 0 rgba(10,14,23,.06); }
@@ -149,7 +150,7 @@
   #fecho { padding: var(--s-6) 0 var(--s-4); color: var(--night-ink); }
   .fecho-grade { display: grid; grid-template-columns: 4fr 8fr; gap: var(--s-5); align-items: end; }
   .retrato { margin: 0; }
-  .retrato img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+  .retrato img { width: 100%; height: auto; aspect-ratio: 896 / 1020; object-fit: cover; border: 10px solid var(--night-ink); box-shadow: 0 24px 48px -18px rgba(0,0,0,.7); }
   .retrato figcaption { margin-top: var(--s-1); font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--night-soft); }
   #fecho h2 { font-size: var(--t-5); line-height: 1.02; max-width: 18ch; }
   blockquote.historia { margin: var(--s-4) 0 0; padding-left: var(--s-3); border-left: 3px solid var(--accent); font: italic 400 var(--t-3)/1.4 var(--serif); max-width: 34ch; color: #D9DDE6; }
@@ -283,7 +284,7 @@
     <div class="wrap">
       <div class="fecho-grade">
         <figure class="retrato" data-fx="crescer" data-fx-duracao="1200">
-          <img src="/idealizador.webp" alt="Retrato em preto e branco do idealizador do News AIVVO, de óculos escuros, segurando um copo de café numa rua movimentada" width="896" height="1199" loading="lazy">
+          <img src="/idealizador-moldura.webp" alt="Retrato em preto e branco do idealizador do News AIVVO, de óculos escuros, segurando um copo de café numa rua movimentada" width="896" height="1020" loading="lazy">
           <figcaption>O idealizador do projeto</figcaption>
         </figure>
         <div>

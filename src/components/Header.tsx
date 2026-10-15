@@ -39,7 +39,13 @@ export async function Header() {
               className="w-full rounded bg-low px-3 py-2 text-sm placeholder:text-outline focus:outline-accent"
             />
           </form>
-          <Link href="/busca" className="ml-auto rounded bg-low px-3 py-1.5 text-xs font-semibold uppercase tracking-wider lg:hidden">Buscar</Link>
+          <Link
+            href="/como-funciona"
+            className="ml-auto shrink-0 rounded-full border border-accent px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent hover:text-white lg:ml-0"
+          >
+            Como funciona
+          </Link>
+          <Link href="/busca" className="shrink-0 rounded bg-low px-3 py-1.5 text-xs font-semibold uppercase tracking-wider lg:hidden">Buscar</Link>
         </div>
         <nav aria-label="Principal" className="border-t border-line">
           <ul className="no-scrollbar mx-auto flex max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap px-4 py-2 text-[0.95rem] font-semibold sm:px-6">
