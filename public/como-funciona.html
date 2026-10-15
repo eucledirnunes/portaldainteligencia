@@ -152,9 +152,12 @@
   .retrato { margin: 0; }
   .retrato img { width: 100%; height: auto; aspect-ratio: 896 / 1020; object-fit: cover; border: 10px solid var(--night-ink); box-shadow: 0 24px 48px -18px rgba(0,0,0,.7); }
   .retrato figcaption { margin-top: var(--s-1); font: 500 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--night-soft); }
-  #fecho h2 { font-size: var(--t-5); line-height: 1.02; max-width: 18ch; }
-  blockquote.historia { margin: var(--s-4) 0 0; padding-left: var(--s-3); border-left: 3px solid var(--accent); font: italic 400 var(--t-3)/1.4 var(--serif); max-width: 34ch; color: #D9DDE6; }
-  .cta { display: inline-block; margin-top: var(--s-4); background: var(--accent); color: #fff; font: 600 var(--t-2)/1 var(--sans); padding: 18px 28px; text-decoration: none; }
+  #fecho h2 { font-size: var(--t-5); line-height: 1.04; max-width: 20ch; }
+  .historia { margin: var(--s-4) 0 0; padding-left: var(--s-3); border-left: 3px solid var(--accent); max-width: 62ch; color: #D9DDE6; }
+  .historia p { margin: 0 0 var(--s-2); font: 400 clamp(17px, 1.7vw, 20px)/1.6 var(--serif); }
+  .historia p:last-child { margin-bottom: 0; }
+  .fecho-linha { margin: var(--s-4) 0 0; font: italic 600 var(--t-3)/1.3 var(--serif); color: var(--night-ink); }
+  .cta { display: inline-block; margin-top: var(--s-3); background: var(--accent); color: #fff; font: 600 var(--t-2)/1 var(--sans); padding: 18px 28px; text-decoration: none; }
   .cta:hover { background: #1560C9; }
   .rodape { margin-top: var(--s-6); border-top: 1px solid #222B3C; padding-top: var(--s-2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s-1) var(--s-3); font: 400 13px/1.6 var(--sans); color: var(--night-soft); }
   .rodape a { color: var(--night-ink); }
@@ -288,8 +291,13 @@
           <figcaption>O idealizador do projeto</figcaption>
         </figure>
         <div>
-          <h2 id="t-fecho" data-fx="palavras" data-fx-duracao="1000">A IA não substitui o jornalismo. Ela cobre a IA, com rapidez, em português.</h2>
-          <blockquote class="historia" data-fx="subir" data-fx-atraso="300">Eu tinha dificuldade de acompanhar tudo o que acontecia no universo da IA. Resolvi criar um portal em que eu pudesse confiar e ficar sempre atualizado.</blockquote>
+          <h2 id="t-fecho" data-fx="palavras" data-fx-duracao="1000">A inteligência artificial está mudando o mundo. Nós ajudamos você a entender como.</h2>
+          <div class="historia" data-fx="subir" data-fx-atraso="300">
+            <p>A inteligência artificial está transformando o mundo em uma velocidade sem precedentes. Mas, em meio a tantas descobertas, notícias e promessas, percebi que acompanhar essa revolução estava se tornando cada vez mais difícil.</p>
+            <p>Foi dessa inquietação que nasceu o News AIVVO: da vontade de criar um espaço onde a informação fosse além das manchetes, onde a tecnologia pudesse ser compreendida sem complicações e onde cada novidade tivesse contexto, clareza e relevância.</p>
+            <p>Mais do que acompanhar o futuro, acredito que precisamos entendê-lo enquanto ele acontece. E é exatamente para isso que estamos aqui.</p>
+          </div>
+          <p class="fecho-linha" data-fx="subir" data-fx-atraso="400">O futuro não espera. A informação também não deveria.</p>
           <a class="cta" data-fx="surgir" data-fx-atraso="500" href="/redacao">Ver a redação ao vivo</a>
         </div>
       </div>

@@ -52,3 +52,7 @@ Paleta: papel #F6F6F2, tinta #0A0E17, noite #0A0E17, UM acento azul da logo #1B7
 
 Pico: cena 4. Assinatura: a rolagem controla a digitação (e o agente digita junto).
 Trava anti-repetição: difere de "Antes de Pagar" em abertura, pico, assinatura, paleta e estrutura.
+
+## Atualização (2026-10-15)
+- Título do fecho: "A inteligência artificial está mudando o mundo. Nós ajudamos você a entender como."
+- Texto do idealizador substituído pelos 3 parágrafos novos; linha final: "O futuro não espera. A informação também não deveria."
