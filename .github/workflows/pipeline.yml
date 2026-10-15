@@ -6,10 +6,10 @@ name: Pipeline editorial (coleta -> eventos -> artigos)
 on:
   workflow_dispatch:
   schedule:
-    # Evita o minuto 0: o GitHub avisa que o início de cada hora é o horário de pico do
-    # scheduler e agendamentos podem ser descartados nesse minuto. Roda 2x/h (:12 e :42)
-    # como redundância — se um disparo for descartado, o outro cobre a lacuna.
-    - cron: "12,42 * * * *"
+    # A cada 2 horas, no minuto 12 (evita o minuto 0: horário de pico do scheduler do GitHub,
+    # onde agendamentos podem ser descartados). Se o disparo externo (/api/cron/trigger-pipeline)
+    # estiver ativo, ele também roda o workflow; o intervalo dele é configurado no serviço de cron.
+    - cron: "12 */2 * * *"
 
 concurrency:
   group: pipeline

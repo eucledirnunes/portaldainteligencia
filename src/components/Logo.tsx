@@ -16,10 +16,11 @@ export function LogoMark({ size = 32 }: { size?: number }) {
 
 export function Logo() {
   return (
-    <Link href="/" className="flex flex-col items-start leading-none" aria-label={`${SITE.name} — página inicial`}>
+    <Link href="/" className="flex shrink-0 flex-col items-start leading-none" aria-label={`${SITE.name} — página inicial`}>
+      {/* max-w-none: sem isso a logo é espremida pelos botões ao lado no celular e fica esticada */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo-news-aivvo.png" alt={SITE.name} width={1528} height={237} className="h-7 w-auto sm:h-8" />
-      <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-muted">{SITE.tagline}</span>
+      <img src="/logo-news-aivvo.png" alt={SITE.name} width={1528} height={237} className="h-6 w-auto max-w-none sm:h-8" />
+      <span className="mt-1 text-[0.6rem] font-semibold uppercase tracking-[0.14em] text-muted">IA em tempo real</span>
     </Link>
   );
 }

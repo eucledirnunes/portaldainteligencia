@@ -29,7 +29,7 @@ export async function Header() {
   return (
     <>
       <header className="sticky top-0 z-30 bg-surface/95 shadow-[0_1px_8px_rgba(10,14,23,0.05)] backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-page items-center gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-page items-center gap-2 px-4 sm:gap-4 sm:px-6">
           <Logo />
           <form action="/busca" role="search" className="mx-4 hidden max-w-md flex-1 lg:block">
             <label htmlFor="q" className="sr-only">Buscar</label>
@@ -45,7 +45,9 @@ export async function Header() {
           >
             Como funciona
           </Link>
-          <Link href="/busca" className="shrink-0 rounded bg-low px-3 py-1.5 text-xs font-semibold uppercase tracking-wider lg:hidden">Buscar</Link>
+          <Link href="/busca" aria-label="Buscar" className="grid h-8 w-8 shrink-0 place-items-center rounded bg-low text-ink lg:hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+          </Link>
         </div>
         <nav aria-label="Principal" className="border-t border-line">
           <ul className="no-scrollbar mx-auto flex max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap px-4 py-2 text-[0.95rem] font-semibold sm:px-6">
